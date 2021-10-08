@@ -18,6 +18,7 @@ Two chief stakeholders, citizens and hospitals
 - Day
 - Vaccine Given
 - Quantity in the slot
+- Hospital Id (look up)
 
 ### Vaccine
 
@@ -35,7 +36,7 @@ Two chief stakeholders, citizens and hospitals
 
 - Name
 - Pincode
-- Program gives them **unique** 8 Digit ID
+- Program gives them **unique** 6 Digit ID
 
 ### COVIN Portal
 
