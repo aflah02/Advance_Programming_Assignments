@@ -1,10 +1,13 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
 public class COVIN {
     static HashMap<String, Vaccine> vaccineTracker = new HashMap<>();
+    static ArrayList<String> vaccineNames = new ArrayList<>();
     static HashMap<String, Hospital> hospitalTracker = new HashMap<>();
     static HashMap<String, Citizen> citizenTracker = new HashMap<>();
+    static HashMap<Integer, Slot> slotTracker = new HashMap<Integer, Slot>();
     private static int Hospital_Unique_ID = 100000;
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -32,6 +35,7 @@ public class COVIN {
                 int gap_between_doses = sc.nextInt();
                 Vaccine vaccine = new Vaccine(vaccine_name, number_of_doses, gap_between_doses);
                 vaccineTracker.put(vaccine_name, vaccine);
+                vaccineNames.add(vaccine_name);
                 System.out.println("Vaccine Name: " + vaccine_name + ", Number of Doses: " + number_of_doses + ", Gap Between Doses: " + gap_between_doses);
                 System.out.println("---------------------------------");
             }
@@ -58,6 +62,40 @@ public class COVIN {
                 citizenTracker.put(citizen_name, citizen);
                 System.out.println("Citizen Name: " + citizen_name + ", Age: " + citizen_age + ", Unique ID: " + citizen_unique_id);
                 System.out.println("---------------------------------");
+            }
+            else if (option == 4){
+                System.out.print("Enter Hospital ID: ");
+                int hospital_id = sc.nextInt();
+                System.out.print("Enter number of Slots to be added: ");
+                int slot_count = sc.nextInt();
+                System.out.print("Enter Day Number: ");
+                int day_number = sc.nextInt();
+                System.out.print("Enter Quantity: ");
+                int quantity = sc.nextInt();
+                System.out.println("Select Vaccine: ");
+                for (int i = 0; i < vaccineNames.size(); i++){
+                    System.out.println(i + ". " + vaccineNames.get(i));
+                }
+                int vaccine_number =  sc.nextInt();
+                Slot slot = new Slot(day_number, vaccineNames.get(vaccine_number), quantity, hospital_id);
+                slotTracker.put(hospital_id, slot);
+                System.out.println("Slot added by Hospital " + hospital_id + " for Day: " + day_number + ", Available Quantity: " + quantity + " of Vaccine " + vaccineNames.get(vaccine_number));
+                System.out.println("---------------------------------");
+            }
+            else if (option == 5){
+                System.out.println("Enter patient Unique ID: ");
+                long patient_unique_id = sc.nextLong();
+                System.out.println("1. Search by area\n" +
+                        "2. Search by Vaccine\n" +
+                        "3. Exit");
+                System.out.print("Enter option: ");
+                int choice = sc.nextInt();
+                if (choice == 1){
+                    System.out.print("Enter Pincode: ");
+                    int n = sc.nextInt();
+
+                }
+
             }
             System.out.print("Please choose one of the tasks above: ");
             option = sc.nextInt();
@@ -113,10 +151,10 @@ class Vaccine{
 }
 class Slot{
     private int s_day;
-    private Vaccine s_vaccine;
+    private String s_vaccine;
     private int s_quantity;
     private int s_hospital_id;
-    Slot(int s_day, Vaccine s_vaccine, int s_quantity, int s_hospital_id){
+    Slot(int s_day, String s_vaccine, int s_quantity, int s_hospital_id){
         this.s_day = s_day;
         this.s_vaccine = s_vaccine;
         this.s_quantity = s_quantity;
