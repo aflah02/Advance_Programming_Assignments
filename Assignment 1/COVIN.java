@@ -75,6 +75,10 @@ public class COVIN {
                 System.out.print("Unique ID: ");
                 long citizen_unique_id = sc.nextLong();
                 System.out.println("Citizen Name: " + citizen_name + ", Age: " + citizen_age + ", Unique ID: " + citizen_unique_id);
+                if (!((citizen_unique_id >= 100000000000L) && (citizen_unique_id <= 999999999999L))){
+                    System.out.println("Invalid Unique ID: It must be a 12 Digit Number (Maybe your leading digit is zero)");
+                    continue;
+                }
                 if (citizen_age < 18){
                     System.out.println("Only above 18 are allowed");
                 }
@@ -314,12 +318,18 @@ public class COVIN {
     private void New_Hospital_Added() {
         Hospital_Unique_ID++;
     }
+
+    private void add_Vaccine(String vaccine_name, int number_of_doses, int gap_between_doses){
+        Vaccine vaccine = new Vaccine(vaccine_name, number_of_doses, gap_between_doses);
+        vaccineTracker.put(vaccine_name, vaccine);
+        vaccineNames.add(vaccine_name);
+    }
 }
 
 class Citizen{
-    private String c_name;
-    private int c_age;
-    private long c_unique_id;
+    private final String c_name;
+    private final int c_age;
+    private final long c_unique_id;
     private int doses;
     private int dosesPending;
     private String vaccine_name;
@@ -377,27 +387,15 @@ class Citizen{
         return c_name;
     }
 
-    public int getC_age() {
-        return c_age;
-    }
-
-    public long getC_unique_id() {
-        return c_unique_id;
-    }
-
     public String getVaccine_name() {
         return vaccine_name;
     }
-
-    public int getVaccineGap() { return vaccineGap; }
-
-    public int getLastDoseDate() { return lastDoseDate; }
 }
 
 class Hospital{
-    private String h_name;
-    private int h_pincode;
-    private int h_unique_id;
+    private final String h_name;
+    private final int h_pincode;
+    private final int h_unique_id;
     private ArrayList<Slot> h_slots;
 
     Hospital(String h_name, int h_pincode, int h_unique_id){
@@ -415,10 +413,6 @@ class Hospital{
         return h_pincode;
     }
 
-    public int getH_unique_id() {
-        return h_unique_id;
-    }
-
     public void addH_slot(Slot slot) { this.h_slots.add(slot); }
 
     public ArrayList<Slot> getH_slots() {
@@ -427,17 +421,13 @@ class Hospital{
 }
 
 class Vaccine{
-    private String v_name;
-    private int v_dose_count;
-    private int v_gap_between_doses;
+    private final String v_name;
+    private final int v_dose_count;
+    private final int v_gap_between_doses;
     Vaccine(String v_name, int v_dose_count, int v_gap_between_doses){
         this.v_name = v_name;
         this.v_dose_count = v_dose_count;
         this.v_gap_between_doses = v_gap_between_doses;
-    }
-
-    public String getV_name() {
-        return v_name;
     }
 
     public int getV_dose_count() {
@@ -450,10 +440,10 @@ class Vaccine{
 }
 
 class Slot{
-    private int s_day;
-    private String s_vaccine;
+    private final int s_day;
+    private final String s_vaccine;
     private int s_quantity;
-    private int s_hospital_id;
+    private final int s_hospital_id;
     Slot(int s_day, String s_vaccine, int s_quantity, int s_hospital_id){
         this.s_day = s_day;
         this.s_vaccine = s_vaccine;
