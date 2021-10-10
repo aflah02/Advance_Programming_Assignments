@@ -1,12 +1,11 @@
 import java.util.*;
 
 public class COVIN {
-    private HashMap<String, Vaccine> vaccineTracker;
-    private ArrayList<String> vaccineNames;
-    private HashMap<Integer, Hospital> hospitalTracker;
-    private HashMap<String, Citizen> citizenTracker;
+    private final HashMap<String, Vaccine> vaccineTracker;
+    private final ArrayList<String> vaccineNames;
+    private final HashMap<Integer, Hospital> hospitalTracker;
+    private final HashMap<String, Citizen> citizenTracker;
     private int Hospital_Unique_ID;
-
     COVIN(){
         vaccineTracker = new HashMap<>();
         vaccineNames = new ArrayList<>();
@@ -371,8 +370,8 @@ public class COVIN {
 }
 
 class Citizen{
-    private final String c_name;
-    private final int c_age;
+    private String c_name;
+    private int c_age;
     private final String c_unique_id;
     private int doses;
     private int dosesPending;
@@ -440,7 +439,7 @@ class Hospital{
     private final String h_name;
     private final String h_pincode;
     private final int h_unique_id;
-    private ArrayList<Slot> h_slots;
+    private final ArrayList<Slot> h_slots;
 
     Hospital(String h_name, String h_pincode, int h_unique_id){
         this.h_name = h_name;
