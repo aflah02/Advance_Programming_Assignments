@@ -1,13 +1,10 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class COVIN {
     private HashMap<String, Vaccine> vaccineTracker;
     private ArrayList<String> vaccineNames;
     private HashMap<Integer, Hospital> hospitalTracker;
-    private HashMap<Long, Citizen> citizenTracker;
+    private HashMap<String, Citizen> citizenTracker;
     private int Hospital_Unique_ID;
 
     COVIN(){
@@ -23,25 +20,13 @@ public class COVIN {
         Scanner sc = new Scanner(System.in);
         System.out.println("CoWin Portal initialized....\n" +
                 "---------------------------------");
-//        System.out.println("""
-//                CoWin Portal initialized....
-//                ---------------------------------
-//                1. Add Vaccine
-//                2. Register Hospital
-//                3. Register Citizen
-//                4. Add Slot for Vaccination
-//                5. Book Slot for Vaccination
-//                6. List all slots for a hospital
-//                7. Check Vaccination Status
-//                8. Exit
-//                ---------------------------------""");
-//        System.out.print("Please choose one of the tasks above: ");
         covin.printMenu();
         int option = sc.nextInt();
         while (option != 8){
             if (option == 1){
+                sc.nextLine();
                 System.out.print("Vaccine Name: ");
-                String vaccine_name = sc.next();
+                String vaccine_name = sc.nextLine();
                 System.out.print("Number of Doses: ");
                 int number_of_doses = sc.nextInt();
                 int gap_between_doses;
@@ -53,97 +38,89 @@ public class COVIN {
                     gap_between_doses = 0;
                 }
                 covin.add_Vaccine(vaccine_name, number_of_doses, gap_between_doses);
-//                Vaccine vaccine = new Vaccine(vaccine_name, number_of_doses, gap_between_doses);
-//                covin.vaccineTracker.put(vaccine_name, vaccine);
-//                covin.vaccineNames.add(vaccine_name);
                 System.out.println("Vaccine Name: " + vaccine_name + ", Number of Doses: " + number_of_doses + ", Gap Between Doses: " + gap_between_doses);
-//                System.out.println("---------------------------------");
                 covin.printSectionBreaker();
             }
             else if (option == 2){
+                sc.nextLine();
                 System.out.print("Hospital Name: ");
-                String hospital_name = sc.next();
+                String hospital_name = sc.nextLine();
                 System.out.print("PinCode: ");
-                int PinCode = sc.nextInt();
-                int Unique_ID = covin.getHospital_Unique_ID();
-                covin.New_Hospital_Added();
-                covin.add_Hospital(hospital_name, PinCode, Unique_ID);
-//                Hospital hospital = new Hospital(hospital_name, PinCode, Unique_ID);
-//                covin.hospitalTracker.put(Unique_ID, hospital);
-                System.out.println("Hospital Name: " + hospital_name + ", PinCode: " + PinCode + ", Unique ID: " + Unique_ID);
-//                System.out.println("---------------------------------");
+                String PinCode = sc.nextLine();
+                if (!covin.isPinCodeValid(PinCode)){
+                    System.out.println("PinCode Entered is Invalid");
+                }
+                else{
+                    int Unique_ID = covin.getHospital_Unique_ID();
+                    covin.add_Hospital(hospital_name, PinCode, Unique_ID);
+                    System.out.println("Hospital Name: " + hospital_name + ", PinCode: " + PinCode + ", Unique ID: " + Unique_ID);
+                }
                 covin.printSectionBreaker();
             }
             else if (option == 3){
+                sc.nextLine();
                 System.out.print("Citizen Name: ");
-                String citizen_name = sc.next();
+                String citizen_name = sc.nextLine();
                 System.out.print("Age: ");
                 int citizen_age = sc.nextInt();
                 System.out.print("Unique ID: ");
-                long citizen_unique_id = sc.nextLong();
+                sc.nextLine();
+                String citizen_unique_id = sc.nextLine();
                 System.out.println("Citizen Name: " + citizen_name + ", Age: " + citizen_age + ", Unique ID: " + citizen_unique_id);
-//                if (!((citizen_unique_id >= 100000000000L) && (citizen_unique_id <= 999999999999L))){
-//                    System.out.println("Invalid Unique ID: It must be a 12 Digit Number (Maybe your leading digit is zero)");
-//                    continue;
-//                }
                 if (!covin.isCitizenIDValid(citizen_unique_id)){
-                    System.out.println("Invalid Unique ID: It must be a 12 Digit Number (Maybe your leading digit is zero)");
-                    continue;
-                }
-//                if (citizen_age < 18){
-//                    System.out.println("Only above 18 are allowed");
-//                }
-//                else{
-//                    if (covin.citizenTracker.containsKey(citizen_unique_id)){
-//                        System.out.println("This Unique ID has already been taken");
-//                    }
-//                    else{
-//                        Citizen citizen = new Citizen(citizen_name, citizen_age, citizen_unique_id);
-//                        covin.citizenTracker.put(citizen_unique_id, citizen);
-//                    }
-//                }
-                if (!covin.isCitizenValid(citizen_age)){
-                    System.out.println("Only above 18 are allowed");
+                    System.out.println("Invalid Unique ID: It must be a 12 Digit Number");
                 }
                 else{
-                    if (covin.citizenTracker.containsKey(citizen_unique_id)){
-                        System.out.println("This Unique ID has already been taken");
+                    if (!covin.isCitizenValid(citizen_age)){
+                        System.out.println("Only above 18 are allowed");
                     }
                     else{
-                        Citizen citizen = new Citizen(citizen_name, citizen_age, citizen_unique_id);
-                        covin.citizenTracker.put(citizen_unique_id, citizen);
+                        if (covin.citizenTracker.containsKey(citizen_unique_id)){
+                            System.out.println("This Unique ID has already been taken");
+                        }
+                        else{
+                            Citizen citizen = new Citizen(citizen_name, citizen_age, citizen_unique_id);
+                            covin.citizenTracker.put(citizen_unique_id, citizen);
+                        }
                     }
                 }
-//                System.out.println("---------------------------------");
                 covin.printSectionBreaker();
             }
             else if (option == 4){
                 System.out.print("Enter Hospital ID: ");
                 int hospital_id = sc.nextInt();
-                System.out.print("Enter number of Slots to be added: ");
-                int slot_count = sc.nextInt();
-                for (int slot_no = 0; slot_no < slot_count; slot_no++){
-                    System.out.print("Enter Day Number: ");
-                    int day_number = sc.nextInt();
-                    System.out.print("Enter Quantity: ");
-                    int quantity = sc.nextInt();
-                    System.out.println("Select Vaccine: ");
-                    for (int i = 0; i < covin.vaccineNames.size(); i++){
-                        System.out.println(i + ". " + covin.vaccineNames.get(i));
-                    }
-                    int vaccine_number =  sc.nextInt();
-                    String vaccine_Name = covin.vaccineNames.get(vaccine_number);
-                    Slot slot = new Slot(day_number, vaccine_Name, quantity, hospital_id);
-                    covin.hospitalTracker.get(hospital_id).addH_slot(slot);
-//                    Hospital hosp = covin.hospitalTracker.get(hospital_id);
-                    System.out.println("Slot added by Hospital " + hospital_id + " for Day: " + day_number + ", Available Quantity: " + quantity + " of Vaccine " + covin.vaccineNames.get(vaccine_number));
+                if (!covin.hospitalTracker.containsKey(hospital_id)){
+                    System.out.println("Not a valid Hospital ID, Please Try Again");
                 }
-//                System.out.println("---------------------------------");
+                else{
+                    System.out.print("Enter number of Slots to be added: ");
+                    int slot_count = sc.nextInt();
+                    for (int slot_no = 0; slot_no < slot_count; slot_no++){
+                        System.out.print("Enter Day Number: ");
+                        int day_number = sc.nextInt();
+                        System.out.print("Enter Quantity: ");
+                        int quantity = sc.nextInt();
+                        if (quantity < 1){
+                            System.out.println("Please enter a quantity > 0");
+                        }
+                        else{
+                            System.out.println("Select Vaccine: ");
+                            for (int i = 0; i < covin.vaccineNames.size(); i++){
+                                System.out.println(i + ". " + covin.vaccineNames.get(i));
+                            }
+                            int vaccine_number =  sc.nextInt();
+                            String vaccine_Name = covin.vaccineNames.get(vaccine_number);
+                            covin.add_Slot(day_number, vaccine_Name, quantity, hospital_id);
+                            System.out.println("Slot added by Hospital " + hospital_id + " for Day: " + day_number + ", Available Quantity: " + quantity + " of Vaccine " + covin.vaccineNames.get(vaccine_number));
+                        }
+                    }
+                }
                 covin.printSectionBreaker();
             }
             else if (option == 5){
                 System.out.print("Enter patient Unique ID: ");
-                long patient_unique_id = sc.nextLong();
+                sc.nextLine();
+                String patient_unique_id = sc.nextLine();
                 System.out.println("""
                         1. Search by area
                         2. Search by Vaccine
@@ -152,9 +129,10 @@ public class COVIN {
                 int choice = sc.nextInt();
                 if (choice == 1){
                     System.out.print("Enter Pincode: ");
-                    int pincode = sc.nextInt();
+                    sc.nextLine();
+                    String pincode = sc.next();
                     for (Map.Entry<Integer, Hospital> entry: covin.hospitalTracker.entrySet()){
-                        if (entry.getValue().getH_pincode() == pincode) {
+                        if (entry.getValue().getH_pincode().equals(pincode)) {
                             System.out.println(entry.getKey() + " " + entry.getValue().getH_name());
                         }
                     }
@@ -164,9 +142,6 @@ public class COVIN {
                     Citizen patient = covin.citizenTracker.get(patient_unique_id);
                     if (patient.isFullyVaccinated()){
                         System.out.println("Patient is already Fully Vaccinated");
-//                System.out.println("---------------------------------");
-                        covin.printSectionBreaker();
-                        continue;
                     }
                     else{
                         for (int i = 0; i < covin.hospitalTracker.get(hosp_id).getH_slots().size(); i++){
@@ -185,111 +160,100 @@ public class COVIN {
                                 }
                             }
                         }
-                    }
-                    if (!slotsPresent){
-                        System.out.println("No slots available");
-//                System.out.println("---------------------------------");
-                        covin.printSectionBreaker();
-                    }
-                    else{
-                        System.out.print("Choose Slot: ");
-                        int chosenSlot = sc.nextInt();
-                        Slot chosen = covin.hospitalTracker.get(hosp_id).getH_slots().get(chosenSlot);
-                        chosen.reduceS_quantity();
-                        String vaccine_chosen = chosen.getS_vaccine();
-
-                        if (!covin.citizenTracker.get(patient_unique_id).isPartiallyVaccinated()){
-                            covin.citizenTracker.get(patient_unique_id).setDoses(covin.vaccineTracker.get(vaccine_chosen).getV_dose_count());
-                            covin.citizenTracker.get(patient_unique_id).setDosesPending(covin.vaccineTracker.get(vaccine_chosen).getV_dose_count());
-                            covin.citizenTracker.get(patient_unique_id).DoseDone(chosen.getS_day());
-                            covin.citizenTracker.get(patient_unique_id).setVaccine_name(vaccine_chosen);
-                            covin.citizenTracker.get(patient_unique_id).setVaccineGap(covin.vaccineTracker.get(vaccine_chosen).getV_gap_between_doses());
+                        if (!slotsPresent){
+                            System.out.println("No slots available");
                         }
                         else{
-                            covin.citizenTracker.get(patient_unique_id).DoseDone(chosen.getS_day());
-                        }
+                            System.out.print("Choose Slot: ");
+                            int chosenSlot = sc.nextInt();
+                            Slot chosen = covin.hospitalTracker.get(hosp_id).getH_slots().get(chosenSlot);
+                            chosen.reduceS_quantity();
+                            String vaccine_chosen = chosen.getS_vaccine();
 
-                        if (chosen.getS_quantity() == 0){
-                            covin.hospitalTracker.get(hosp_id).getH_slots().remove(chosen);
+                            if (!covin.citizenTracker.get(patient_unique_id).isPartiallyVaccinated()){
+                                covin.firstVaccination(patient_unique_id, vaccine_chosen, chosen);
+                            }
+                            else{
+                                covin.citizenTracker.get(patient_unique_id).DoseDone(chosen.getS_day());
+                            }
+
+                            if (chosen.getS_quantity() == 0){
+                                covin.hospitalTracker.get(hosp_id).getH_slots().remove(chosen);
+                            }
+                            System.out.println(covin.citizenTracker.get(patient_unique_id).getC_name() + " vaccinated with " + covin.citizenTracker.get(patient_unique_id).getVaccine_name());
                         }
-                        System.out.println(covin.citizenTracker.get(patient_unique_id).getC_name() + " vaccinated with " + covin.citizenTracker.get(patient_unique_id).getVaccine_name());
-//                System.out.println("---------------------------------");
-                        covin.printSectionBreaker();
                     }
+                    covin.printSectionBreaker();
                 }
                 else if (choice == 2){
                     System.out.print("Enter Vaccine name: ");
-                    String Vaccine_name = sc.next();
-                    for (Map.Entry<Integer, Hospital> entry: covin.hospitalTracker.entrySet()){
-                        for (int i = 0; i < entry.getValue().getH_slots().size(); i++){
-                            if (entry.getValue().getH_slots().get(i).getS_vaccine().equals(Vaccine_name)){
-                                System.out.println(entry.getValue().getH_slots().get(i).getS_hospital_id() + " " + covin.hospitalTracker.get(entry.getValue().getH_slots().get(i).getS_hospital_id()).getH_name());
-                                break;
-                            }
-                        }
-                    }
-                    System.out.print("Enter hospital id: ");
-                    int hosp_id = sc.nextInt();
-                    boolean slotsPresent = false;
-                    Citizen patient = covin.citizenTracker.get(patient_unique_id);
-                    if (patient.isFullyVaccinated()){
-                        System.out.println("Patient is already Fully Vaccinated");
-//                System.out.println("---------------------------------");
-                        covin.printSectionBreaker();
-                        continue;
+                    sc.nextLine();
+                    String Vaccine_name = sc.nextLine();
+                    if (!covin.vaccineTracker.containsKey(Vaccine_name)){
+                        System.out.println("No Such Vaccine Found");
                     }
                     else{
-                        for (int i = 0; i < covin.hospitalTracker.get(hosp_id).getH_slots().size(); i++){
-                            Slot temp = covin.hospitalTracker.get(hosp_id).getH_slots().get(i);
-                            if (patient.isPartiallyVaccinated()){
-                                if ((temp.getS_vaccine().equals(Vaccine_name)) && (patient.getVaccine_name().equals(temp.getS_vaccine()) && (patient.nextDoseDate() <= temp.getS_day())))
-                                {
-                                    slotsPresent = true;
-                                    System.out.println(i + "-> Day: " + temp.getS_day() + " Available Qty:" + temp.getS_quantity() + " Vaccine:" + temp.getS_vaccine());
+                        for (Map.Entry<Integer, Hospital> entry: covin.hospitalTracker.entrySet()){
+                            for (int i = 0; i < entry.getValue().getH_slots().size(); i++){
+                                if (entry.getValue().getH_slots().get(i).getS_vaccine().equals(Vaccine_name)){
+                                    System.out.println(entry.getValue().getH_slots().get(i).getS_hospital_id() + " " + covin.hospitalTracker.get(entry.getValue().getH_slots().get(i).getS_hospital_id()).getH_name());
+                                    break;
                                 }
                             }
-                            else{
+                        }
+                        System.out.print("Enter hospital id: ");
+                        int hosp_id = sc.nextInt();
+                        boolean slotsPresent = false;
+                        Citizen patient = covin.citizenTracker.get(patient_unique_id);
+                        if (patient.isFullyVaccinated()){
+                            System.out.println("Patient is already Fully Vaccinated");
+                        }
+                        else{
+                            for (int i = 0; i < covin.hospitalTracker.get(hosp_id).getH_slots().size(); i++){
+                                Slot temp = covin.hospitalTracker.get(hosp_id).getH_slots().get(i);
+                                if (patient.isPartiallyVaccinated()){
+                                    if ((temp.getS_vaccine().equals(Vaccine_name)) && (patient.getVaccine_name().equals(temp.getS_vaccine()) && (patient.nextDoseDate() <= temp.getS_day())))
+                                    {
+                                        slotsPresent = true;
+                                        System.out.println(i + "-> Day: " + temp.getS_day() + " Available Qty:" + temp.getS_quantity() + " Vaccine:" + temp.getS_vaccine());
+                                    }
+                                }
+                                else{
                                     if (temp.getS_vaccine().equals(Vaccine_name))
                                     {
                                         slotsPresent = true;
                                         System.out.println(i + "-> Day: " + temp.getS_day() + " Available Qty:" + temp.getS_quantity() + " Vaccine:" + temp.getS_vaccine());
                                     }
+                                }
+                            }
+                            if (!slotsPresent){
+                                System.out.println("No slots available");
+                            }
+                            else{
+                                System.out.print("Choose Slot: ");
+                                int chosenSlot = sc.nextInt();
+                                Slot chosen = covin.hospitalTracker.get(hosp_id).getH_slots().get(chosenSlot);
+                                chosen.reduceS_quantity();
+                                String vaccine_chosen = chosen.getS_vaccine();
+
+                                if (!covin.citizenTracker.get(patient_unique_id).isPartiallyVaccinated()){
+                                    covin.firstVaccination(patient_unique_id, vaccine_chosen, chosen);
+                                }
+                                else{
+                                    covin.citizenTracker.get(patient_unique_id).DoseDone(chosen.getS_day());
+                                }
+
+                                if (chosen.getS_quantity() == 0){
+                                    covin.hospitalTracker.get(hosp_id).getH_slots().remove(chosen);
+                                }
+                                System.out.println(covin.citizenTracker.get(patient_unique_id).getC_name() + " vaccinated with " + covin.citizenTracker.get(patient_unique_id).getVaccine_name());
                             }
                         }
-                    }
-                    if (!slotsPresent){
-                        System.out.println("No slots available");
-//                System.out.println("---------------------------------");
-                        covin.printSectionBreaker();
-                    }
-                    else{
-                        System.out.print("Choose Slot: ");
-                        int chosenSlot = sc.nextInt();
-                        Slot chosen = covin.hospitalTracker.get(hosp_id).getH_slots().get(chosenSlot);
-                        chosen.reduceS_quantity();
-                        String vaccine_chosen = chosen.getS_vaccine();
-
-                        if (!covin.citizenTracker.get(patient_unique_id).isPartiallyVaccinated()){
-                            covin.citizenTracker.get(patient_unique_id).setDoses(covin.vaccineTracker.get(vaccine_chosen).getV_dose_count());
-                            covin.citizenTracker.get(patient_unique_id).setDosesPending(covin.vaccineTracker.get(vaccine_chosen).getV_dose_count());
-                            covin.citizenTracker.get(patient_unique_id).DoseDone(chosen.getS_day());
-                            covin.citizenTracker.get(patient_unique_id).setVaccine_name(vaccine_chosen);
-                            covin.citizenTracker.get(patient_unique_id).setVaccineGap(covin.vaccineTracker.get(vaccine_chosen).getV_gap_between_doses());
-                        }
-                        else{
-                            covin.citizenTracker.get(patient_unique_id).DoseDone(chosen.getS_day());
-                        }
-
-                        if (chosen.getS_quantity() == 0){
-                            covin.hospitalTracker.get(hosp_id).getH_slots().remove(chosen);
-                        }
-                        System.out.println(covin.citizenTracker.get(patient_unique_id).getC_name() + " vaccinated with " + covin.citizenTracker.get(patient_unique_id).getVaccine_name());
-//                System.out.println("---------------------------------");
                         covin.printSectionBreaker();
                     }
                 }
                 else if (choice == 3){
-                    continue;
+                    System.out.println("Exiting");
                 }
                 else{
                     System.out.println("Invalid Option Chosen");
@@ -298,53 +262,67 @@ public class COVIN {
             else if (option == 6){
                 System.out.print("Enter Hospital Id: ");
                 int hosp_id = sc.nextInt();
-                ArrayList<Slot> hosp_slots = covin.hospitalTracker.get(hosp_id).getH_slots();
-                for (int i = 0; i < hosp_slots.size(); i++){
-                    System.out.println("Day: " + hosp_slots.get(i).getS_day() + " Vaccine: " + hosp_slots.get(i).getS_vaccine() + " Available Qty: " + hosp_slots.get(i).getS_quantity());
-                }
-//                System.out.println("---------------------------------");
-                covin.printSectionBreaker();
-             }
-            else if (option == 7){
-                System.out.println("Enter Patient ID: ");
-                long patient_id = sc.nextLong();
-                Citizen citizen = covin.citizenTracker.get(patient_id);
-                if (!citizen.isPartiallyVaccinated()){
-                    System.out.println("Citizen REGISTERED");
-                }
-                else if (citizen.isFullyVaccinated()){
-                    System.out.println("FULLY VACCINATED");
+                if (!covin.hospitalTracker.containsKey(hosp_id)){
+                    System.out.println("Not a Valid Hospital ID");
                 }
                 else{
-                    System.out.println("PARTIALLY VACCINATED");
-                }
-                if (citizen.isPartiallyVaccinated()){
-                    System.out.println("Vaccine Given: " + citizen.getVaccine_name());
-                    System.out.println("Number of Doses given: " + citizen.getDosesDone());
-                    if (!citizen.isFullyVaccinated()){
-                        System.out.println("Next Dose due date: " + citizen.nextDoseDate());
+                    ArrayList<Slot> hosp_slots = covin.hospitalTracker.get(hosp_id).getH_slots();
+                    for (Slot hosp_slot : hosp_slots) {
+                        System.out.println("Day: " + hosp_slot.getS_day() + " Vaccine: " + hosp_slot.getS_vaccine() + " Available Qty: " + hosp_slot.getS_quantity());
                     }
                 }
-//                System.out.println("---------------------------------");
                 covin.printSectionBreaker();
             }
-//            System.out.println("""
-//                1. Add Vaccine
-//                2. Register Hospital
-//                3. Register Citizen
-//                4. Add Slot for Vaccination
-//                5. Book Slot for Vaccination
-//                6. List all slots for a hospital
-//                7. Check Vaccination Status
-//                8. Exit
-//                ---------------------------------""");
-//            System.out.print("Please choose one of the tasks above: ");
+            else if (option == 7){
+                System.out.print("Enter Patient ID: ");
+                sc.nextLine();
+                String patient_id = sc.nextLine();
+                if (!covin.citizenTracker.containsKey(patient_id)){
+                    System.out.println("No Patient with given Patient ID Exists");
+                }
+                else{
+                    Citizen citizen = covin.citizenTracker.get(patient_id);
+                    covin.printCitizenStatus(citizen);
+                    if (citizen.isPartiallyVaccinated()){
+                        System.out.println("Vaccine Given: " + citizen.getVaccine_name());
+                        System.out.println("Number of Doses given: " + citizen.getDosesDone());
+                        if (!citizen.isFullyVaccinated()){
+                            System.out.println("Next Dose due date: " + citizen.nextDoseDate());
+                        }
+                    }
+                }
+                covin.printSectionBreaker();
+            }
             covin.printMenu();
             option = sc.nextInt();
         }
         System.out.println("Thank You for Using our Program");
     }
 
+    private void firstVaccination(String patient_unique_id, String vaccine_chosen, Slot chosen){
+        citizenTracker.get(patient_unique_id).setDoses(vaccineTracker.get(vaccine_chosen).getV_dose_count());
+        citizenTracker.get(patient_unique_id).setDosesPending(vaccineTracker.get(vaccine_chosen).getV_dose_count());
+        citizenTracker.get(patient_unique_id).DoseDone(chosen.getS_day());
+        citizenTracker.get(patient_unique_id).setVaccine_name(vaccine_chosen);
+        citizenTracker.get(patient_unique_id).setVaccineGap(vaccineTracker.get(vaccine_chosen).getV_gap_between_doses());
+    }
+
+    private void add_Slot(int day_number, String vaccine_Name, int quantity, int hospital_id){
+        Slot slot = new Slot(day_number, vaccine_Name, quantity, hospital_id);
+        hospitalTracker.get(hospital_id).addH_slot(slot);
+    }
+
+    private void printCitizenStatus(Citizen citizen){
+        if (!citizen.isPartiallyVaccinated()){
+            System.out.println("Citizen REGISTERED");
+        }
+        else if (citizen.isFullyVaccinated()){
+            System.out.println("FULLY VACCINATED");
+        }
+        else{
+            System.out.println("PARTIALLY VACCINATED");
+        }
+    }
     private void printMenu(){
         System.out.println("""
                 1. Add Vaccine
@@ -367,34 +345,35 @@ public class COVIN {
         return Hospital_Unique_ID;
     }
 
-    private void New_Hospital_Added() {
-        Hospital_Unique_ID++;
-    }
-
     private void add_Vaccine(String vaccine_name, int number_of_doses, int gap_between_doses){
         Vaccine vaccine = new Vaccine(vaccine_name, number_of_doses, gap_between_doses);
         vaccineTracker.put(vaccine_name, vaccine);
         vaccineNames.add(vaccine_name);
     }
 
-    private void add_Hospital(String hospital_name, int PinCode, int Unique_ID){
+    private void add_Hospital(String hospital_name, String PinCode, int Unique_ID){
         Hospital hospital = new Hospital(hospital_name, PinCode, Unique_ID);
         hospitalTracker.put(Unique_ID, hospital);
+        Hospital_Unique_ID++;
     }
 
-    private boolean isCitizenIDValid(long citizen_unique_id){
-        return (citizen_unique_id >= 100000000000L) && (citizen_unique_id <= 999999999999L);
+    private boolean isCitizenIDValid(String citizen_unique_id){
+        return (citizen_unique_id.length() == 12);
     }
 
     private boolean isCitizenValid(int age){
         return age >= 18;
+    }
+
+    private boolean isPinCodeValid(String pincode){
+        return (pincode.length() == 6);
     }
 }
 
 class Citizen{
     private final String c_name;
     private final int c_age;
-    private final long c_unique_id;
+    private final String c_unique_id;
     private int doses;
     private int dosesPending;
     private String vaccine_name;
@@ -403,7 +382,7 @@ class Citizen{
     private boolean isFullyVaccinated = false;
     private int lastDoseDate;
 
-    Citizen(String c_name, int c_age, long c_unique_id){
+    Citizen(String c_name, int c_age, String c_unique_id){
         this.c_name = c_name;
         this.c_age = c_age;
         this.c_unique_id = c_unique_id;
@@ -459,11 +438,11 @@ class Citizen{
 
 class Hospital{
     private final String h_name;
-    private final int h_pincode;
+    private final String h_pincode;
     private final int h_unique_id;
     private ArrayList<Slot> h_slots;
 
-    Hospital(String h_name, int h_pincode, int h_unique_id){
+    Hospital(String h_name, String h_pincode, int h_unique_id){
         this.h_name = h_name;
         this.h_pincode = h_pincode;
         this.h_unique_id = h_unique_id;
@@ -474,7 +453,7 @@ class Hospital{
         return h_name;
     }
 
-    public int getH_pincode() {
+    public String getH_pincode() {
         return h_pincode;
     }
 

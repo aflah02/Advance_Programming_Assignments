@@ -12,7 +12,7 @@ Medistar
 HealthCenter
 110001
 4
-100000 (Use your IDs)
+100000
 2
 1
 5
@@ -54,7 +54,7 @@ Covax
 2
 Covax
 100001
-0 (Slot ids based on your implementation)
+0
 7
 123456789000
 6
