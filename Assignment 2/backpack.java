@@ -8,7 +8,6 @@ public class backpack {
     private final ArrayList<assessments> assessmentTracker;
     private final ArrayList<LectureMaterial> lectureMaterialTracker;
     private final ArrayList<comments> commentTracker;
-    private int assessmentID;
     Scanner sc;
     backpack(){
         this.commentTracker = new ArrayList<>();
@@ -16,7 +15,6 @@ public class backpack {
         this.studentTracker = new ArrayList<>();
         this.assessmentTracker = new ArrayList<>();
         this.lectureMaterialTracker = new ArrayList<>();
-        this.assessmentID = 0;
         this.sc = new Scanner(System.in);
         instructorTracker.add(new instructor("I0"));
         instructorTracker.add(new instructor("I1"));
@@ -30,14 +28,43 @@ public class backpack {
         int option = backpack.sc.nextInt();
         while (option != 3) {
             if (option == 2) {
-                backpack.printStudentMenu();
+                backpack.showStudents();
+                System.out.print("Choose id: ");
+                int student_number = backpack.sc.nextInt();
+                student std = backpack.studentTracker.get(student_number);
+                backpack.printStudentMenu(std);
+                int menu_option = backpack.sc.nextInt();
+                if (menu_option == 1){
+                    backpack.viewLectureMaterials(std);
+                }
+                else if (menu_option == 2){
+                    backpack.viewAssessments(std);
+                }
+                else if (menu_option == 3){
+                    //TODO
+                }
+                else if (menu_option == 4){
+                    //TODO
+                }
+                else if (menu_option == 5){
+                    backpack.viewComments(std);
+                }
+                else if (menu_option == 6){
+                    System.out.print("Enter Comment: ");
+                    String commentText = backpack.sc.nextLine();
+                    Date currentTime = new java.util.Date(System.currentTimeMillis());
+                    backpack.addComment(std, currentTime, commentText);
+                }
+                else{
+                    continue;
+                }
+
             } else {
                 backpack.showInstructors();
                 System.out.print("Choose id: ");
                 int instructor_number = backpack.sc.nextInt();
                 instructor inst = backpack.instructorTracker.get(instructor_number);
-                System.out.println("Welcome " + inst.getName());
-                backpack.printInstructorMenu();
+                backpack.printInstructorMenu(inst);
                 int menu_option = backpack.sc.nextInt();
                 if (menu_option == 1) {
                     System.out.println("1. Add Lecture Slide\n" +
@@ -76,63 +103,31 @@ public class backpack {
                         String problemStatement = backpack.sc.nextLine();
                         System.out.print("Enter max marks: ");
                         int maxMarks = backpack.sc.nextInt();
-                        backpack.assessmentTracker.add(new assignment(problemStatement, maxMarks, backpack.assessmentID));
-                        backpack.incrementAssessmentID();
+                        backpack.addAssignment(inst, problemStatement, maxMarks);
                     } else if (assessmentType == 2) {
                         System.out.print("Enter quiz question: ");
                         String quizQuestion = backpack.sc.nextLine();
-                        backpack.assessmentTracker.add(new quiz(quizQuestion, backpack.assessmentID));
-                        backpack.incrementAssessmentID();
+                        backpack.addQuiz(inst, quizQuestion);
                     }
                 }
                 else if (menu_option == 3) {
-                    for (LectureMaterial material : backpack.lectureMaterialTracker) {
-                        if (material instanceof LectureSlides) {
-                            backpack.printLectureSlide(material);
-                        } else if (material instanceof LectureRecordings) {
-                            backpack.printLectureRecording(material);
-                        }
-                        System.out.println();
-                    }
+                    backpack.viewLectureMaterials(inst);
                 }
                 else if (menu_option == 4){
-                    backpack.showAssessments();
+                    backpack.viewAssessments(inst);
                 }
                 else if (menu_option == 5){
                     // TODO
                 }
                 else if (menu_option == 6){
                     System.out.println("List of Open Assignments:");
-                    backpack.showAssessments();
+                    backpack.viewAssessments(inst);
                     System.out.print("Enter id of assignment to close: ");
                     int assignment_id = backpack.sc.nextInt();
-                    for (assessments assessment: backpack.assessmentTracker) {
-                        if (assessment instanceof assignment){
-                            if (assignment_id == ((assignment) assessment).getAssessmentID()){
-                                backpack.assessmentTracker.remove(assessment);
-                                break;
-                            }
-                        }
-                        else if (assessment instanceof quiz){
-                            if (assignment_id == ((quiz) assessment).getAssessmentID()){
-                                backpack.assessmentTracker.remove(assessment);
-                                break;
-                            }
-                        }
-                    }
+                    backpack.closeAssessment(inst, assignment_id);
                 }
                 else if (menu_option == 7){
-                    for (comments comment: backpack.commentTracker){
-                        if (comment.getUser() instanceof instructor){
-                            System.out.println(comment.getComment() + " - " + ((instructor) comment.getUser()).getName());
-                            System.out.println(comment.getUploadDate());
-                        }
-                        else if (comment.getUser() instanceof student){
-                            System.out.println(comment.getComment() + " - " + ((student) comment.getUser()).getName());
-                            System.out.println(comment.getUploadDate());
-                        }
-                        System.out.println();
-                    }
+                    backpack.viewComments(inst);
                 }
                 else if (menu_option == 8){
                     System.out.print("Enter Comment: ");
@@ -140,49 +135,50 @@ public class backpack {
                     Date currentTime = new java.util.Date(System.currentTimeMillis());
                     backpack.commentTracker.add(new comments(inst, currentTime, commentText));
                 }
+                else{
+                    continue;
+                }
             }
             backpack.printStartMenu();
             option = backpack.sc.nextInt();
         }
         System.out.println("-------------------------------------------------------------------------------------------------");
     }
-    private void showAssessments(){
-        for (assessments assessment: assessmentTracker) {
-            if (assessment instanceof assignment){
-                System.out.println("ID: " + ((assignment) assessment).getAssessmentID() + " Assignment: " + ((assignment) assessment).getProblemStatement() + " Max Marks: " + ((assignment) assessment).getMaxMarks());
-            }
-            else if (assessment instanceof quiz){
-                System.out.println("ID: " + ((quiz) assessment).getAssessmentID() + " Assignment: " + ((quiz) assessment).getQuizQuestion());
-            }
-        }
+
+    private void addComment(user user, Date currentTime, String commentText) {
+        user.addComments(currentTime, commentText, commentTracker);
     }
-    private void incrementAssessmentID(){
-        this.assessmentID++;
+
+    private void closeAssessment(instructor inst, int assessmentNumber){
+        inst.closeAssessment(assessmentNumber, assessmentTracker);
     }
-    private void printLectureSlide(LectureMaterial material){
-        System.out.println("Title: " + ((LectureSlides) material).getTitle());
-        for (int i = 0; i < ((LectureSlides) material).getSlideContent().size(); i++){
-            System.out.println("Slide " + (i+1) + ": " + ((LectureSlides) material).getSlideContent().get(i));
-        }
-        System.out.println("Date of upload: " + ((LectureSlides) material).getUploadDate());
-        System.out.println("Uploaded by: " + ((LectureSlides) material).getUploader().getName());
+    private void addQuiz(instructor inst, String quizQuestion) {
+        instructor.addQuiz(quizQuestion, assessmentTracker);
     }
-    private void printLectureRecording(LectureMaterial material){
-        System.out.println("Title of video: " + ((LectureRecordings) material).getTitle());
-        System.out.println("Video file: " + ((LectureRecordings) material).getFileName());
-        System.out.println("Date of upload: " + ((LectureRecordings) material).getUploadDate());
-        System.out.println("Uploaded by: " + ((LectureRecordings) material).getUploader().getName());
+
+    private void addAssignment(instructor instructor, String problemStatement, int maxMarks){
+        instructor.addAssignment(problemStatement, maxMarks, assessmentTracker);
+    }
+    private void viewComments(user user){
+        user.viewComments(commentTracker);
+
+    }
+    private void viewLectureMaterials(user user){
+        user.viewLectureMaterials(lectureMaterialTracker);
+    }
+    private void viewAssessments(user user){
+        user.viewAssessments(assessmentTracker);
     }
     private void addLectureSlides(String slideTopic, ArrayList<String> slideContent, Date currentTime, instructor inst){
-        lectureMaterialTracker.add(new LectureSlides(slideTopic, slideContent, currentTime, inst));
+        inst.addSlides(slideTopic, slideContent, currentTime, lectureMaterialTracker);
     }
     private void addLectureRecording(String videoTopic, String fileName, Date currentTime, instructor inst){
         int fileNameLength = fileName.length();
         if (fileNameLength < 4){
             System.out.println("Invalid file name");
         }
-        else if (fileName.substring(fileNameLength-4, fileNameLength).equals(".mp4")){
-            lectureMaterialTracker.add(new LectureRecordings(videoTopic, fileName, currentTime, inst));
+        else if (fileName.startsWith(".mp4", fileNameLength-4)){
+            inst.addVideos(videoTopic, fileName, currentTime, lectureMaterialTracker);
         }
         else{
             System.out.println("Invalid File Format, Please only Upload Files with .mp4 Extension");
@@ -207,7 +203,8 @@ public class backpack {
                 2. Enter as student
                 3. Exit""");
     }
-    private void printInstructorMenu(){
+    private void printInstructorMenu(instructor inst){
+        System.out.println("Welcome " + inst.getName());
         System.out.println("""
                 INSTRUCTOR MENU
                 1. Add class material
@@ -221,7 +218,8 @@ public class backpack {
                 9. Logout
                 """);
     }
-    private void printStudentMenu(){
+    private void printStudentMenu(student std){
+        System.out.println("Welcome " + std.getName());
         System.out.println("""
                 STUDENT MENU
                 1. View lecture materials
@@ -236,17 +234,19 @@ public class backpack {
 interface assessments{
     public void addQuestion(String s);
     public void setMaxMarks(int maxMarks);
-    public void setAssessmentID(int id);
+    public void view(int index);
+    public void close();
+    public boolean isClose();
 }
 
 class quiz implements assessments{
     private String quizQuestion;
     private int maxMarks;
-    private int assessmentID;
-    quiz(String quizQuestion, int assessmentID){
+    private boolean close;
+    quiz(String quizQuestion){
         addQuestion(quizQuestion);
         setMaxMarks(1);
-        setAssessmentID(assessmentID);
+        close = false;
     }
     @Override
     public void addQuestion(String quizQuestion) {
@@ -259,8 +259,8 @@ class quiz implements assessments{
     }
 
     @Override
-    public void setAssessmentID(int id) {
-        this.assessmentID = id;
+    public void view(int index) {
+        System.out.println("ID: " + index + " Assignment: " + this.getQuizQuestion());
     }
 
     public String getQuizQuestion() {
@@ -271,19 +271,25 @@ class quiz implements assessments{
         return maxMarks;
     }
 
-    public int getAssessmentID() {
-        return assessmentID;
+    @Override
+    public void close() {
+        this.close = true;
+    }
+
+    @Override
+    public boolean isClose() {
+        return this.close;
     }
 }
 
 class assignment implements assessments{
     private String problemStatement;
     private int maxMarks;
-    private int assessmentID;
-    assignment(String problemStatement, int maxMarks, int assessmentID){
+    private boolean close;
+    assignment(String problemStatement, int maxMarks){
         addQuestion(problemStatement);
         setMaxMarks(maxMarks);
-        setAssessmentID(assessmentID);
+        close = false;
     }
     @Override
     public void addQuestion(String problemStatement) {
@@ -296,8 +302,8 @@ class assignment implements assessments{
     }
 
     @Override
-    public void setAssessmentID(int id) {
-        this.assessmentID = id;
+    public void view(int index) {
+        System.out.println("ID: " + index + " Assignment: " + this.getProblemStatement() + " Max Marks: " + this.getMaxMarks());
     }
 
     public String getProblemStatement() {
@@ -308,8 +314,14 @@ class assignment implements assessments{
         return maxMarks;
     }
 
-    public int getAssessmentID() {
-        return assessmentID;
+    @Override
+    public void close() {
+        this.close = true;
+    }
+
+    @Override
+    public boolean isClose() {
+        return this.close;
     }
 }
 
@@ -317,10 +329,10 @@ interface LectureMaterial{
     public void setTitle(String title);
     public void setTime(Date currentTime);
     public void setInstructor(instructor uploader);
+    public void view();
 }
 
 class LectureSlides implements LectureMaterial{
-
     private String title;
     private ArrayList<String> slideContent;
     private Date uploadDate;
@@ -350,6 +362,16 @@ class LectureSlides implements LectureMaterial{
     @Override
     public void setInstructor(instructor uploader) {
         this.uploader = uploader;
+    }
+
+    @Override
+    public void view() {
+        System.out.println("Title: " + this.getTitle());
+        for (int i = 0; i < this.getSlideContent().size(); i++){
+            System.out.println("Slide " + (i+1) + ": " + this.getSlideContent().get(i));
+        }
+        System.out.println("Date of upload: " + this.getUploadDate());
+        System.out.println("Uploaded by: " + this.getUploader().getName());
     }
 
     public String getTitle() {
@@ -402,6 +424,14 @@ class LectureRecordings implements LectureMaterial{
         this.uploader = uploader;
     }
 
+    @Override
+    public void view() {
+        System.out.println("Title of video: " + this.getTitle());
+        System.out.println("Video file: " + this.getFileName());
+        System.out.println("Date of upload: " + this.getUploadDate());
+        System.out.println("Uploaded by: " + this.getUploader().getName());
+    }
+
     public String getTitle() {
         return title;
     }
@@ -421,10 +451,11 @@ class LectureRecordings implements LectureMaterial{
 interface user{
     public void login();
     public void logout();
-    public void viewComments();
-    public void addComments();
-    public void viewLectureMaterials();
-    public void viewAssessments();
+    public void viewComments(ArrayList<comments> commentTracker);
+    public void addComments(Date currentTime, String commentText, ArrayList<comments> commentTracker);
+    public void viewLectureMaterials(ArrayList<LectureMaterial> lectureMaterials);
+    public void viewAssessments(ArrayList<assessments> assessmentTracker);
+    String getName();
 }
 
 class instructor implements user{
@@ -434,40 +465,61 @@ class instructor implements user{
         this.isLoggedin = false;
         this.name = name;
     }
+
+    public static void addQuiz(String quizQuestion, ArrayList<assessments> assessmentTracker) {
+        assessmentTracker.add(new quiz(quizQuestion));
+    }
+
     @Override
     public void login() { this.isLoggedin = true; }
     @Override
     public void logout() { this.isLoggedin = false; }
     @Override
-    public void viewComments() {
-
+    public void viewComments(ArrayList<comments> commentTracker) {
+        for (comments comment: commentTracker){
+            System.out.println("comment.getComment() + \" - \" + comment.getUser().getName()");
+            System.out.println();
+        }
     }
     @Override
-    public void addComments() {
-
+    public void addComments(Date currentTime, String commentText, ArrayList<comments> commentTracker) {
+        commentTracker.add(new comments(this, currentTime, commentText));
     }
     @Override
-    public void viewLectureMaterials() {
-
+    public void viewLectureMaterials(ArrayList<LectureMaterial> lectureMaterials) {
+        for (LectureMaterial material: lectureMaterials){
+            material.view();
+        }
     }
     @Override
-    public void viewAssessments() {
+    public void viewAssessments(ArrayList<assessments> assessmentTracker) {
+        for (int i = 0; i < assessmentTracker.size(); i++){
+            if (!assessmentTracker.get(i).isClose()){
+                assessmentTracker.get(i).view(i);
+            }
+        }
+    }
+    public void addAssignment(String problemStatement, int maxMarks, ArrayList<assessments> assessmentsArrayList){
+        assessmentsArrayList.add(new assignment(problemStatement, maxMarks));
+    }
+    public void addSlides(String slideTopic, ArrayList<String> slideContent, Date currentTime, ArrayList<LectureMaterial> lectureMaterialTracker){
+        lectureMaterialTracker.add(new LectureSlides(slideTopic, slideContent, currentTime, this));
+    }
+    public void addVideos(String videoTopic, String fileName, Date currentTime, ArrayList<LectureMaterial> lectureMaterialTracker){
+        lectureMaterialTracker.add(new LectureRecordings(videoTopic, fileName, currentTime, this));
+    }
+    public void gradeAssessments(){
 
     }
-    private void addClassMaterial(){
-
-    }
-    private void addAssessment(){
-
-    }
-    private void gradeAssessments(){
-
-    }
-    private void closeAssessments(){
+    public void closeAssessments(){
 
     }
     public String getName() {
         return name;
+    }
+
+    public void closeAssessment(int assessmentNumber, ArrayList<assessments> assessmentTracker) {
+        assessmentTracker.get(assessmentNumber).close();
     }
 }
 
@@ -483,25 +535,39 @@ class student implements user{
     @Override
     public void logout() { this.isLoggedin = false; }
     @Override
-    public void viewComments() {
-
+    public void viewComments(ArrayList<comments> commentTracker) {
+        for (comments comment: commentTracker){
+            if (comment.getUser() instanceof instructor){
+                System.out.println(comment.getComment() + " - " + ((instructor) comment.getUser()).getName());
+                System.out.println(comment.getUploadDate());
+            }
+            else if (comment.getUser() instanceof student){
+                System.out.println(comment.getComment() + " - " + ((student) comment.getUser()).getName());
+                System.out.println(comment.getUploadDate());
+            }
+            System.out.println();
+        }
     }
     @Override
-    public void addComments() {
-
+    public void addComments(Date currentTime, String commentText, ArrayList<comments> commentTracker) {
+        commentTracker.add(new comments(this, currentTime, commentText));
     }
     @Override
-    public void viewLectureMaterials() {
-
+    public void viewLectureMaterials(ArrayList<LectureMaterial> lectureMaterials) {
+        for (LectureMaterial material: lectureMaterials){
+            material.view();
+        }
     }
     @Override
-    public void viewAssessments() {
+    public void viewAssessments(ArrayList<assessments> assessmentTracker) {
+        for (int i = 0; i < assessmentTracker.size(); i++){
+            assessmentTracker.get(i).view(i);
+        }
+    }
+    public void submitAssessments(){
 
     }
-    private void submitAssessments(){
-
-    }
-    private void viewGrades(){
+    public void viewGrades(){
 
     }
     public String getName() {
