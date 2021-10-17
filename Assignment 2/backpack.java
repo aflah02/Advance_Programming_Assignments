@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class backpack {
@@ -7,8 +8,9 @@ public class backpack {
     private final ArrayList<student> studentTracker;
     private final ArrayList<assessments> assessmentTracker;
     private final ArrayList<LectureMaterial> lectureMaterialTracker;
-    private final ArrayList<comments> commentTracker;
+    private final ArrayList<commentContainer> commentTracker;
     Scanner sc;
+    Scanner sc2;
     backpack(){
         this.commentTracker = new ArrayList<>();
         this.instructorTracker = new ArrayList<>();
@@ -16,6 +18,7 @@ public class backpack {
         this.assessmentTracker = new ArrayList<>();
         this.lectureMaterialTracker = new ArrayList<>();
         this.sc = new Scanner(System.in);
+        this.sc2 = new Scanner(System.in);
         instructorTracker.add(new instructor("I0"));
         instructorTracker.add(new instructor("I1"));
         studentTracker.add(new student("S0"));
@@ -41,18 +44,47 @@ public class backpack {
                     else if (menu_option == 2){
                         backpack.viewAssessments(std);
                     }
-//                    else if (menu_option == 3){
-//                        //TODO
-//                    }
-//                    else if (menu_option == 4){
-//                        //TODO
-//                    }
+                    else if (menu_option == 3){
+                        System.out.println("Pending assessments");
+                        backpack.viewPendingAssessments(std);
+                        System.out.print("Enter ID of assessment: ");
+                        int assessmentID = backpack.sc.nextInt();
+                        assessments assessment = backpack.assessmentTracker.get(assessmentID);
+                        if (assessment instanceof quiz){
+                            System.out.print(backpack.assessmentTracker.get(assessmentID).getQuestion());
+                            String ans = backpack.sc2.nextLine();
+                            submissionContainer toSubmit = new submissionContainer(assessment);
+                            toSubmit.setAnsGiven(std, ans);
+                            backpack.submitAssessment(std, assessment, toSubmit);
+                        }
+                        else{
+                            System.out.print("Enter filename of assignment: ");
+                            String fileName = backpack.sc2.nextLine();
+                            submissionContainer toSubmit = new submissionContainer(assessment);
+                            if (fileName.length() < 4){
+                                System.out.println("Invalid File Name");
+                            }
+                            else if (fileName.startsWith(".zip", fileName.length()-4)){
+                                toSubmit.setSubmissionName(fileName);
+                                backpack.submitAssessment(std, assessment, toSubmit);
+                            }
+                            else{
+                                System.out.println("Invalid File Extension");
+                            }
+                        }
+                    }
+                    else if (menu_option == 4){
+                        System.out.println("Graded submissions");
+                        backpack.viewGradedAssessments(std);
+                        System.out.println("Ungraded submissions");
+                        backpack.viewUngradedAssessments(std);
+                    }
                     else if (menu_option == 5){
                         backpack.viewComments(std);
                     }
                     else if (menu_option == 6){
                         System.out.print("Enter Comment: ");
-                        String commentText = backpack.sc.nextLine();
+                        String commentText = backpack.sc2.nextLine();
                         Date currentTime = new java.util.Date(System.currentTimeMillis());
                         backpack.addComment(std, currentTime, commentText);
                     }
@@ -71,43 +103,51 @@ public class backpack {
                         System.out.println("1. Add Lecture Slide\n" +
                                 "2. Add Lecture Video");
                         int material_type = backpack.sc.nextInt();
-                        backpack.sc.nextLine();
                         if (material_type == 1) {
                             System.out.print("Enter topic of slides: ");
-                            String slideTopic = backpack.sc.nextLine();
+                            String slideTopic = backpack.sc2.nextLine();
                             System.out.print("Enter number of slides: ");
                             int slideCount = backpack.sc.nextInt();
-                            backpack.sc.nextLine();
                             System.out.println("Enter content of slides");
                             ArrayList<String> slideContent = new ArrayList<>();
                             for (int i = 0; i < slideCount; i++) {
                                 System.out.print("Content of slide " + (i + 1) + ":");
-                                slideContent.add(backpack.sc.nextLine());
+                                slideContent.add(backpack.sc2.nextLine());
                             }
                             Date currentTime = new java.util.Date(System.currentTimeMillis());
-                            backpack.addLectureSlides(slideTopic, slideContent, currentTime, inst);
+                            LectureSlides slides  = new LectureSlides(slideTopic, slideContent, currentTime, inst);
+                            backpack.addLectureMaterials(inst, slides);
                         } else if (material_type == 2) {
                             System.out.print("Enter topic of video: ");
-                            String videoTopic = backpack.sc.nextLine();
+                            String videoTopic = backpack.sc2.nextLine();
                             System.out.print("Enter filename of video: ");
-                            String fileName = backpack.sc.nextLine();
+                            String fileName = backpack.sc2.nextLine();
                             Date currentTime = new java.util.Date(System.currentTimeMillis());
-                            backpack.addLectureRecording(videoTopic, fileName, currentTime, inst);
+                            LectureRecordings video = new LectureRecordings(videoTopic, fileName, currentTime, inst);
+                            int fileNameLength = fileName.length();
+                            if (fileNameLength < 4){
+                                System.out.println("Invalid file name");
+                            }
+                            else if (fileName.startsWith(".mp4", fileNameLength-4)){
+                                backpack.addLectureMaterials(inst, video);
+                            }
+                            else{
+                                System.out.println("Invalid File Format, Please only Upload Files with .mp4 Extension");
+                            }
                         }
                     } else if (menu_option == 2) {
                         System.out.println("1. Add Assignment\n" +
                                 "2. Add Quiz");
                         int assessmentType = backpack.sc.nextInt();
-                        backpack.sc.nextLine();
                         if (assessmentType == 1) {
                             System.out.print("Enter problem statement: ");
-                            String problemStatement = backpack.sc.nextLine();
+                            String problemStatement = backpack.sc2.nextLine();
                             System.out.print("Enter max marks: ");
                             int maxMarks = backpack.sc.nextInt();
                             backpack.addAssignment(inst, problemStatement, maxMarks);
                         } else if (assessmentType == 2) {
                             System.out.print("Enter quiz question: ");
-                            String quizQuestion = backpack.sc.nextLine();
+                            String quizQuestion = backpack.sc2.nextLine();
                             backpack.addQuiz(inst, quizQuestion);
                         }
                     }
@@ -117,9 +157,37 @@ public class backpack {
                     else if (menu_option == 4){
                         backpack.viewAssessments(inst);
                     }
-//                    else if (menu_option == 5){
-//                        // TODO
-//                    }
+                    else if (menu_option == 5){
+                        System.out.println("List of assessments");
+                        backpack.viewAssessments(inst);
+                        System.out.print("Enter ID of assessment to view submissions: ");
+                        int assessment_id = backpack.sc.nextInt();
+                        assessments assessment = backpack.assessmentTracker.get(assessment_id);
+                        System.out.println("Choose ID from these ungraded submissions");
+                        boolean anyValid = false;
+                        for (int i = 0; i < backpack.studentTracker.size(); i++){
+                            if (!backpack.studentTracker.get(i).getStudentSubmissionMap().isEmpty()  && !backpack.studentTracker.get(i).getChosenStudentSubmission(assessment).isGraded()){
+                                System.out.println(i + ". " + backpack.studentTracker.get(i).getName());
+                                anyValid = true;
+                            }
+                        }
+                        if (!anyValid){
+                            continue;
+                        }
+                        int student_no = backpack.sc.nextInt();
+                        submissionContainer submission = backpack.studentTracker.get(student_no).getChosenStudentSubmission(assessment);
+                        if (assessment instanceof assignment){
+                            System.out.println("Submission: " + submission.getSubmissionName());
+                        }
+                        else{
+                            System.out.println("Submission: " + submission.getAssessment().getQuestion() + " , Answer Given: " + submission.getAnsGiven());
+                        }
+                        System.out.println("-------------------------------");
+                        System.out.println("Max Marks: " + submission.getAssessment().getMaxMarks());
+                        System.out.print("Marks scored: ");
+                        int marksScored = backpack.sc.nextInt();
+                        backpack.gradeSubmission(inst, submission, marksScored);
+                    }
                     else if (menu_option == 6){
                         System.out.println("List of Open Assignments:");
                         backpack.viewAssessments(inst);
@@ -132,9 +200,9 @@ public class backpack {
                     }
                     else if (menu_option == 8){
                         System.out.print("Enter Comment: ");
-                        String commentText = backpack.sc.nextLine();
+                        String commentText = backpack.sc2.nextLine();
                         Date currentTime = new java.util.Date(System.currentTimeMillis());
-                        backpack.commentTracker.add(new comments(inst, currentTime, commentText));
+                        backpack.commentTracker.add(new commentContainer(inst, currentTime, commentText));
                     }
                     backpack.printInstructorMenu(inst);
                     menu_option = backpack.sc.nextInt();
@@ -146,6 +214,25 @@ public class backpack {
         System.out.println("-------------------------------------------------------------------------------------------------");
     }
 
+    private void viewUngradedAssessments(student std) {
+        std.viewUngradedAssessments(assessmentTracker);
+    }
+
+    private void viewGradedAssessments(student std) {
+        std.viewGradedAssessments(assessmentTracker);
+    }
+
+    private void viewPendingAssessments(student std) {
+        std.viewPendingAssessments(assessmentTracker);
+    }
+
+    private void gradeSubmission(instructor inst, submissionContainer submission, int marksScored) {
+        inst.gradeAssessments(submission, marksScored);
+    }
+
+    private void submitAssessment(student std, assessments assessment, submissionContainer submission){
+        std.submitAssessments(assessment, submission);
+    }
     private void addComment(user user, Date currentTime, String commentText) {
         user.addComments(currentTime, commentText, commentTracker);
     }
@@ -162,28 +249,16 @@ public class backpack {
     }
     private void viewComments(user user){
         user.viewComments(commentTracker);
-
     }
+
     private void viewLectureMaterials(user user){
         user.viewLectureMaterials(lectureMaterialTracker);
     }
     private void viewAssessments(user user){
         user.viewAssessments(assessmentTracker);
     }
-    private void addLectureSlides(String slideTopic, ArrayList<String> slideContent, Date currentTime, instructor inst){
-        inst.addSlides(slideTopic, slideContent, currentTime, lectureMaterialTracker);
-    }
-    private void addLectureRecording(String videoTopic, String fileName, Date currentTime, instructor inst){
-        int fileNameLength = fileName.length();
-        if (fileNameLength < 4){
-            System.out.println("Invalid file name");
-        }
-        else if (fileName.startsWith(".mp4", fileNameLength-4)){
-            inst.addVideos(videoTopic, fileName, currentTime, lectureMaterialTracker);
-        }
-        else{
-            System.out.println("Invalid File Format, Please only Upload Files with .mp4 Extension");
-        }
+    private void addLectureMaterials(instructor inst, LectureMaterial material){
+        inst.addLectureMaterial(material, lectureMaterialTracker);
     }
     private void showInstructors(){
         System.out.println("Instructors");
@@ -238,6 +313,8 @@ interface assessments{
     public void view(int index);
     public void close();
     public boolean isClose();
+    public String getQuestion();
+    public int getMaxMarks();
 }
 
 class quiz implements assessments{
@@ -261,10 +338,11 @@ class quiz implements assessments{
 
     @Override
     public void view(int index) {
-        System.out.println("ID: " + index + " Assignment: " + this.getQuizQuestion());
+        System.out.println("ID: " + index + " Assignment: " + this.getQuestion());
     }
 
-    public String getQuizQuestion() {
+    @Override
+    public String getQuestion() {
         return quizQuestion;
     }
 
@@ -304,10 +382,11 @@ class assignment implements assessments{
 
     @Override
     public void view(int index) {
-        System.out.println("ID: " + index + " Assignment: " + this.getProblemStatement() + " Max Marks: " + this.getMaxMarks());
+        System.out.println("ID: " + index + " Assignment: " + this.getQuestion() + " Max Marks: " + this.getMaxMarks());
     }
 
-    public String getProblemStatement() {
+    @Override
+    public String getQuestion() {
         return problemStatement;
     }
 
@@ -420,8 +499,8 @@ class LectureRecordings implements LectureMaterial{
 interface user{
     public void login();
     public void logout();
-    public void viewComments(ArrayList<comments> commentTracker);
-    public void addComments(Date currentTime, String commentText, ArrayList<comments> commentTracker);
+    public void viewComments(ArrayList<commentContainer> commentTracker);
+    public void addComments(Date currentTime, String commentText, ArrayList<commentContainer> commentTracker);
     public void viewLectureMaterials(ArrayList<LectureMaterial> lectureMaterials);
     public void viewAssessments(ArrayList<assessments> assessmentTracker);
     public String getName();
@@ -444,14 +523,14 @@ class instructor implements user{
     @Override
     public void logout() { this.isLoggedin = false; }
     @Override
-    public void viewComments(ArrayList<comments> commentTracker) {
-        for (comments comment: commentTracker){
+    public void viewComments(ArrayList<commentContainer> commentTracker) {
+        for (commentContainer comment: commentTracker){
             System.out.println(comment.getComment() + " - " + comment.getUser().getName());
             System.out.println();
         }
     }
     @Override
-    public void addComments(Date currentTime, String commentText, ArrayList<comments> commentTracker) { commentTracker.add(new comments(this, currentTime, commentText)); }
+    public void addComments(Date currentTime, String commentText, ArrayList<commentContainer> commentTracker) { commentTracker.add(new commentContainer(this, currentTime, commentText)); }
     @Override
     public void viewLectureMaterials(ArrayList<LectureMaterial> lectureMaterials) {
         for (LectureMaterial material: lectureMaterials){ material.view(); }
@@ -467,17 +546,13 @@ class instructor implements user{
     public void addAssignment(String problemStatement, int maxMarks, ArrayList<assessments> assessmentsArrayList){
         assessmentsArrayList.add(new assignment(problemStatement, maxMarks));
     }
-    public void addSlides(String slideTopic, ArrayList<String> slideContent, Date currentTime, ArrayList<LectureMaterial> lectureMaterialTracker){
-        lectureMaterialTracker.add(new LectureSlides(slideTopic, slideContent, currentTime, this));
+    public void addLectureMaterial(LectureMaterial lectureMaterial, ArrayList<LectureMaterial> lectureMaterialTracker){
+        lectureMaterialTracker.add(lectureMaterial);
     }
-    public void addVideos(String videoTopic, String fileName, Date currentTime, ArrayList<LectureMaterial> lectureMaterialTracker){
-        lectureMaterialTracker.add(new LectureRecordings(videoTopic, fileName, currentTime, this));
-    }
-    public void gradeAssessments(){
-
-    }
-    public void closeAssessments(){
-
+    public void gradeAssessments(submissionContainer submission, int marksEarned){
+        submission.setMarksEarned(marksEarned);
+        submission.setGradingInstructor(this);
+        submission.grade();
     }
     public String getName() { return name; }
     public void closeAssessment(int assessmentNumber, ArrayList<assessments> assessmentTracker) {
@@ -486,9 +561,11 @@ class instructor implements user{
 }
 
 class student implements user{
+    private final HashMap<assessments, submissionContainer> studentSubmission;
     private final String name;
     private boolean isLoggedin;
     student(String name){
+        this.studentSubmission = new HashMap<>();
         this.isLoggedin = false;
         this.name = name;
     }
@@ -497,15 +574,15 @@ class student implements user{
     @Override
     public void logout() { this.isLoggedin = false; }
     @Override
-    public void viewComments(ArrayList<comments> commentTracker) {
-        for (comments comment: commentTracker){
+    public void viewComments(ArrayList<commentContainer> commentTracker) {
+        for (commentContainer comment: commentTracker){
             System.out.println(comment.getComment() + " - " + comment.getUser().getName());
             System.out.println(comment.getUploadDate());
         }
     }
     @Override
-    public void addComments(Date currentTime, String commentText, ArrayList<comments> commentTracker) {
-        commentTracker.add(new comments(this, currentTime, commentText));
+    public void addComments(Date currentTime, String commentText, ArrayList<commentContainer> commentTracker) {
+        commentTracker.add(new commentContainer(this, currentTime, commentText));
     }
     @Override
     public void viewLectureMaterials(ArrayList<LectureMaterial> lectureMaterials) {
@@ -519,8 +596,8 @@ class student implements user{
             assessmentTracker.get(i).view(i);
         }
     }
-    public void submitAssessments(){
-
+    public void submitAssessments(assessments assessment, submissionContainer submission){
+        this.studentSubmission.put(assessment, submission);
     }
     public void viewGrades(){
 
@@ -528,13 +605,49 @@ class student implements user{
     public String getName() {
         return name;
     }
+
+    public HashMap<assessments, submissionContainer> getStudentSubmissionMap() {
+        return studentSubmission;
+    }
+    public submissionContainer getChosenStudentSubmission(assessments assessment){
+        return studentSubmission.get(assessment);
+    }
+
+    public void viewPendingAssessments(ArrayList<assessments> assessmentTracker) {
+        boolean isPending = false;
+        for (int i = 0; i < assessmentTracker.size(); i++){
+            if (!studentSubmission.containsKey(assessmentTracker.get(i)) && !assessmentTracker.get(i).isClose()){
+                assessmentTracker.get(i).view(i);
+                isPending = true;
+            }
+        }
+        if (!isPending){
+            System.out.println("No pending assignments");
+        }
+    }
+
+    public void viewGradedAssessments(ArrayList<assessments> assessmentTracker) {
+        for (int i = 0; i < assessmentTracker.size(); i++){
+            if (studentSubmission.containsKey(assessmentTracker.get(i)) && studentSubmission.get(assessmentTracker.get(i)).isGraded()){
+                assessmentTracker.get(i).view(i);
+            }
+        }
+    }
+
+    public void viewUngradedAssessments(ArrayList<assessments> assessmentTracker) {
+        for (int i = 0; i < assessmentTracker.size(); i++){
+            if (studentSubmission.containsKey(assessmentTracker.get(i)) && !studentSubmission.get(assessmentTracker.get(i)).isGraded()){
+                assessmentTracker.get(i).view(i);
+            }
+        }
+    }
 }
 
-class comments{
+class commentContainer {
     private final user user;
     private final Date uploadDate;
     private final String comment;
-    comments(user user, Date uploadDate, String comment){
+    commentContainer(user user, Date uploadDate, String comment){
         this.comment =comment;
         this.uploadDate = uploadDate;
         this.user = user;
@@ -550,5 +663,61 @@ class comments{
 
     public String getComment() {
         return comment;
+    }
+}
+
+class submissionContainer{
+    private assessments assessment;
+    private instructor gradingInstructor;
+    private String ansGiven;
+    private String submissionName;
+    private int marksEarned;
+    private boolean isGraded;
+    public submissionContainer(assessments assessment)
+    {
+        this.assessment = assessment;
+        this.isGraded = false;
+    }
+
+    public void grade(){
+        this.isGraded = true;
+    }
+    public void setGradingInstructor(instructor gradingInstructor) {
+        this.gradingInstructor = gradingInstructor;
+    }
+    public void setMarksEarned(int marksEarned) {
+        this.marksEarned = marksEarned;
+    }
+
+    public assessments getAssessment() {
+        return assessment;
+    }
+
+    public instructor getGradingInstructor() {
+        return gradingInstructor;
+    }
+
+    public String getAnsGiven() {
+        return ansGiven;
+    }
+
+    public int getMarksEarned() {
+        return marksEarned;
+    }
+
+    public boolean isGraded() {
+        return isGraded;
+    }
+
+    public String getSubmissionName() {
+        return submissionName;
+    }
+
+    public void setSubmissionName(String submissionName) {
+        this.submissionName = submissionName;
+    }
+
+    public void setAnsGiven(student std, String ansGiven) {
+        this.ansGiven = ansGiven;
     }
 }
