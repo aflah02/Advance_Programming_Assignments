@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.util.*;
 
 public class backpack {
     private final ArrayList<instructor> instructorTracker;
@@ -19,14 +16,14 @@ public class backpack {
         this.lectureMaterialTracker = new ArrayList<>();
         this.sc = new Scanner(System.in);
         this.sc2 = new Scanner(System.in);
-        instructorTracker.add(new instructor("I0"));
-        instructorTracker.add(new instructor("I1"));
-        studentTracker.add(new student("S0"));
-        studentTracker.add(new student("S1"));
-        studentTracker.add(new student("S2"));
     }
     public static void main(String[] args) {
         backpack backpack = new backpack();
+        backpack.instructorTracker.add(new instructor("I0"));
+        backpack.instructorTracker.add(new instructor("I1"));
+        backpack.studentTracker.add(new student("S0"));
+        backpack.studentTracker.add(new student("S1"));
+        backpack.studentTracker.add(new student("S2"));
         backpack.printStartMenu();
         int option = backpack.sc.nextInt();
         while (option != 3) {
@@ -35,6 +32,7 @@ public class backpack {
                 System.out.print("Choose id: ");
                 int student_number = backpack.sc.nextInt();
                 student std = backpack.studentTracker.get(student_number);
+                std.login();
                 backpack.printStudentMenu(std);
                 int menu_option = backpack.sc.nextInt();
                 while (menu_option != 7){
@@ -42,42 +40,44 @@ public class backpack {
                         backpack.viewLectureMaterials(std);
                     }
                     else if (menu_option == 2){
-                        backpack.viewAssessments(std);
+                        boolean anyOpen = backpack.viewAssessments(std);
+                        if (!anyOpen){
+                            System.out.println("No Open Assessments");
+                        }
                     }
                     else if (menu_option == 3){
                         System.out.println("Pending assessments");
-                        backpack.viewPendingAssessments(std);
-                        System.out.print("Enter ID of assessment: ");
-                        int assessmentID = backpack.sc.nextInt();
-                        assessments assessment = backpack.assessmentTracker.get(assessmentID);
-                        if (assessment instanceof quiz){
-                            System.out.print(backpack.assessmentTracker.get(assessmentID).getQuestion());
-                            String ans = backpack.sc2.nextLine();
-                            submissionContainer toSubmit = new submissionContainer(assessment);
-                            toSubmit.setAnsGiven(std, ans);
-                            backpack.submitAssessment(std, assessment, toSubmit);
-                        }
-                        else{
-                            System.out.print("Enter filename of assignment: ");
-                            String fileName = backpack.sc2.nextLine();
-                            submissionContainer toSubmit = new submissionContainer(assessment);
-                            if (fileName.length() < 4){
-                                System.out.println("Invalid File Name");
-                            }
-                            else if (fileName.startsWith(".zip", fileName.length()-4)){
-                                toSubmit.setSubmissionName(fileName);
+                        boolean isPending = backpack.viewPendingAssessments(std);
+                        if (isPending){
+                            System.out.print("Enter ID of assessment: ");
+                            int assessmentID = backpack.sc.nextInt();
+                            assessments assessment = backpack.assessmentTracker.get(assessmentID);
+                            if (assessment instanceof quiz){
+                                System.out.print(backpack.assessmentTracker.get(assessmentID).getQuestion());
+                                String ans = backpack.sc2.nextLine();
+                                submissionContainer toSubmit = new submissionContainer(assessment);
+                                toSubmit.setAnsGiven(std, ans);
                                 backpack.submitAssessment(std, assessment, toSubmit);
                             }
                             else{
-                                System.out.println("Invalid File Extension");
+                                System.out.print("Enter filename of assignment: ");
+                                String fileName = backpack.sc2.nextLine();
+                                submissionContainer toSubmit = new submissionContainer(assessment);
+                                if (fileName.length() < 4){
+                                    System.out.println("Invalid File Name");
+                                }
+                                else if (fileName.startsWith(".zip", fileName.length()-4)){
+                                    toSubmit.setSubmissionName(fileName);
+                                    backpack.submitAssessment(std, assessment, toSubmit);
+                                }
+                                else{
+                                    System.out.println("Invalid File Extension");
+                                }
                             }
                         }
                     }
                     else if (menu_option == 4){
-                        System.out.println("Graded submissions");
-                        backpack.viewGradedAssessments(std);
-                        System.out.println("Ungraded submissions");
-                        backpack.viewUngradedAssessments(std);
+                        backpack.viewGrades(std);
                     }
                     else if (menu_option == 5){
                         backpack.viewComments(std);
@@ -90,12 +90,16 @@ public class backpack {
                     }
                     backpack.printStudentMenu(std);
                     menu_option = backpack.sc.nextInt();
+                    if (menu_option == 7){
+                        std.logout();
+                    }
                 }
             } else {
                 backpack.showInstructors();
                 System.out.print("Choose id: ");
                 int instructor_number = backpack.sc.nextInt();
                 instructor inst = backpack.instructorTracker.get(instructor_number);
+                inst.login();
                 backpack.printInstructorMenu(inst);
                 int menu_option = backpack.sc.nextInt();
                 while (menu_option != 9){
@@ -144,56 +148,73 @@ public class backpack {
                             String problemStatement = backpack.sc2.nextLine();
                             System.out.print("Enter max marks: ");
                             int maxMarks = backpack.sc.nextInt();
-                            backpack.addAssignment(inst, problemStatement, maxMarks);
+                            assignment toAddAssignment = new assignment(problemStatement, maxMarks);
+                            backpack.addAssessments(inst, toAddAssignment);
                         } else if (assessmentType == 2) {
                             System.out.print("Enter quiz question: ");
                             String quizQuestion = backpack.sc2.nextLine();
-                            backpack.addQuiz(inst, quizQuestion);
+                            quiz toAddQuiz = new quiz(quizQuestion);
+                            backpack.addAssessments(inst, toAddQuiz);
                         }
                     }
                     else if (menu_option == 3) {
                         backpack.viewLectureMaterials(inst);
                     }
                     else if (menu_option == 4){
-                        backpack.viewAssessments(inst);
+                        boolean anyOpen = backpack.viewAssessments(inst);
+                        if (!anyOpen){
+                            System.out.println("No Open Assessments");
+                        }
                     }
                     else if (menu_option == 5){
                         System.out.println("List of assessments");
-                        backpack.viewAssessments(inst);
-                        System.out.print("Enter ID of assessment to view submissions: ");
-                        int assessment_id = backpack.sc.nextInt();
-                        assessments assessment = backpack.assessmentTracker.get(assessment_id);
-                        System.out.println("Choose ID from these ungraded submissions");
-                        boolean anyValid = false;
-                        for (int i = 0; i < backpack.studentTracker.size(); i++){
-                            if (!backpack.studentTracker.get(i).getStudentSubmissionMap().isEmpty()  && !backpack.studentTracker.get(i).getChosenStudentSubmission(assessment).isGraded()){
-                                System.out.println(i + ". " + backpack.studentTracker.get(i).getName());
-                                anyValid = true;
-                            }
-                        }
-                        if (!anyValid){
-                            continue;
-                        }
-                        int student_no = backpack.sc.nextInt();
-                        submissionContainer submission = backpack.studentTracker.get(student_no).getChosenStudentSubmission(assessment);
-                        if (assessment instanceof assignment){
-                            System.out.println("Submission: " + submission.getSubmissionName());
+                        boolean anyOpen = backpack.viewAssessments(inst);
+                        if (!anyOpen){
+                            System.out.println("No Open Assessments");
                         }
                         else{
-                            System.out.println("Submission: " + submission.getAssessment().getQuestion() + " , Answer Given: " + submission.getAnsGiven());
+                            System.out.print("Enter ID of assessment to view submissions: ");
+                            int assessment_id = backpack.sc.nextInt();
+                            assessments assessment = backpack.assessmentTracker.get(assessment_id);
+                            System.out.println("Choose ID from these ungraded submissions");
+                            boolean anyValid = false;
+                            for (int i = 0; i < backpack.studentTracker.size(); i++){
+                                if (!backpack.studentTracker.get(i).getStudentSubmissionMap().isEmpty() &&
+                                        backpack.studentTracker.get(i).getStudentSubmissionMap().containsKey(assessment) &&
+                                        !backpack.studentTracker.get(i).getChosenStudentSubmission(assessment).isGraded()){
+                                    System.out.println(i + ". " + backpack.studentTracker.get(i).getName());
+                                    anyValid = true;
+                                }
+                            }
+                            if (!anyValid){
+                                continue;
+                            }
+                            int student_no = backpack.sc.nextInt();
+                            submissionContainer submission = backpack.studentTracker.get(student_no).getChosenStudentSubmission(assessment);
+                            if (assessment instanceof assignment){
+                                System.out.println("Submission: " + submission.getSubmissionName());
+                            }
+                            else{
+                                System.out.println("Submission: " + submission.getAssessment().getQuestion() + " , Answer Given: " + submission.getAnsGiven());
+                            }
+                            System.out.println("-------------------------------");
+                            System.out.println("Max Marks: " + submission.getAssessment().getMaxMarks());
+                            System.out.print("Marks scored: ");
+                            int marksScored = backpack.sc.nextInt();
+                            backpack.gradeSubmission(inst, submission, marksScored);
                         }
-                        System.out.println("-------------------------------");
-                        System.out.println("Max Marks: " + submission.getAssessment().getMaxMarks());
-                        System.out.print("Marks scored: ");
-                        int marksScored = backpack.sc.nextInt();
-                        backpack.gradeSubmission(inst, submission, marksScored);
                     }
                     else if (menu_option == 6){
-                        System.out.println("List of Open Assignments:");
-                        backpack.viewAssessments(inst);
-                        System.out.print("Enter id of assignment to close: ");
-                        int assignment_id = backpack.sc.nextInt();
-                        backpack.closeAssessment(inst, assignment_id);
+                        System.out.println("List of Open Assessments: ");
+                        boolean anyOpen = backpack.viewAssessments(inst);
+                        if (!anyOpen){
+                            System.out.println("No Open Assessments");
+                        }
+                        else{
+                            System.out.print("Enter id of Assessment to close: ");
+                            int assignment_id = backpack.sc.nextInt();
+                            backpack.closeAssessment(inst, assignment_id);
+                        }
                     }
                     else if (menu_option == 7){
                         backpack.viewComments(inst);
@@ -206,6 +227,9 @@ public class backpack {
                     }
                     backpack.printInstructorMenu(inst);
                     menu_option = backpack.sc.nextInt();
+                    if (menu_option == 9){
+                        inst.logout();
+                    }
                 }
             }
             backpack.printStartMenu();
@@ -214,16 +238,12 @@ public class backpack {
         System.out.println("-------------------------------------------------------------------------------------------------");
     }
 
-    private void viewUngradedAssessments(student std) {
-        std.viewUngradedAssessments(assessmentTracker);
+    private void viewGrades(student std){
+        std.viewGrades(assessmentTracker);
     }
 
-    private void viewGradedAssessments(student std) {
-        std.viewGradedAssessments(assessmentTracker);
-    }
-
-    private void viewPendingAssessments(student std) {
-        std.viewPendingAssessments(assessmentTracker);
+    private boolean viewPendingAssessments(student std) {
+        return std.viewPendingAssessments(assessmentTracker);
     }
 
     private void gradeSubmission(instructor inst, submissionContainer submission, int marksScored) {
@@ -240,26 +260,23 @@ public class backpack {
     private void closeAssessment(instructor inst, int assessmentNumber){
         inst.closeAssessment(assessmentNumber, assessmentTracker);
     }
-    private void addQuiz(instructor inst, String quizQuestion) {
-        inst.addQuiz(quizQuestion, assessmentTracker);
-    }
 
-    private void addAssignment(instructor instructor, String problemStatement, int maxMarks){
-        instructor.addAssignment(problemStatement, maxMarks, assessmentTracker);
-    }
     private void viewComments(user user){
         user.viewComments(commentTracker);
     }
-
+    private void addAssessments(instructor inst, assessments assessment){
+        inst.addAssessments(assessment, assessmentTracker);
+    }
     private void viewLectureMaterials(user user){
         user.viewLectureMaterials(lectureMaterialTracker);
     }
-    private void viewAssessments(user user){
-        user.viewAssessments(assessmentTracker);
+    private boolean viewAssessments(user user){
+        return user.viewAssessments(assessmentTracker);
     }
     private void addLectureMaterials(instructor inst, LectureMaterial material){
         inst.addLectureMaterial(material, lectureMaterialTracker);
     }
+
     private void showInstructors(){
         System.out.println("Instructors");
         for (int i = 0; i < instructorTracker.size(); i++){
@@ -410,6 +427,9 @@ interface LectureMaterial{
     public void setTime(Date currentTime);
     public void setInstructor(instructor uploader);
     public void view();
+    public String getTitle();
+    public Date getUploadDate();
+    public instructor getUploader();
 }
 
 class LectureSlides implements LectureMaterial{
@@ -446,12 +466,15 @@ class LectureSlides implements LectureMaterial{
         System.out.println("Uploaded by: " + this.getUploader().getName());
     }
 
+    @Override
     public String getTitle() { return title; }
 
     public ArrayList<String> getSlideContent() { return slideContent; }
 
+    @Override
     public Date getUploadDate() { return uploadDate; }
 
+    @Override
     public instructor getUploader() { return uploader; }
 }
 
@@ -488,12 +511,15 @@ class LectureRecordings implements LectureMaterial{
         System.out.println("Uploaded by: " + this.getUploader().getName());
     }
 
+    @Override
     public String getTitle() { return title; }
 
     public String getFileName() { return fileName; }
 
+    @Override
     public Date getUploadDate() { return uploadDate; }
 
+    @Override
     public instructor getUploader() { return uploader; }
 }
 interface user{
@@ -502,7 +528,7 @@ interface user{
     public void viewComments(ArrayList<commentContainer> commentTracker);
     public void addComments(Date currentTime, String commentText, ArrayList<commentContainer> commentTracker);
     public void viewLectureMaterials(ArrayList<LectureMaterial> lectureMaterials);
-    public void viewAssessments(ArrayList<assessments> assessmentTracker);
+    public boolean viewAssessments(ArrayList<assessments> assessmentTracker);
     public String getName();
 }
 
@@ -513,11 +539,6 @@ class instructor implements user{
         this.isLoggedin = false;
         this.name = name;
     }
-
-    public void addQuiz(String quizQuestion, ArrayList<assessments> assessmentTracker) {
-        assessmentTracker.add(new quiz(quizQuestion));
-    }
-
     @Override
     public void login() { this.isLoggedin = true; }
     @Override
@@ -533,22 +554,28 @@ class instructor implements user{
     public void addComments(Date currentTime, String commentText, ArrayList<commentContainer> commentTracker) { commentTracker.add(new commentContainer(this, currentTime, commentText)); }
     @Override
     public void viewLectureMaterials(ArrayList<LectureMaterial> lectureMaterials) {
-        for (LectureMaterial material: lectureMaterials){ material.view(); }
+        for (LectureMaterial material: lectureMaterials){ material.view();
+            System.out.println();}
     }
     @Override
-    public void viewAssessments(ArrayList<assessments> assessmentTracker) {
+    public boolean viewAssessments(ArrayList<assessments> assessmentTracker) {
+        boolean anyOpen = false;
         for (int i = 0; i < assessmentTracker.size(); i++){
             if (!assessmentTracker.get(i).isClose()){
                 assessmentTracker.get(i).view(i);
+                anyOpen = true;
             }
         }
+        return anyOpen;
     }
-    public void addAssignment(String problemStatement, int maxMarks, ArrayList<assessments> assessmentsArrayList){
-        assessmentsArrayList.add(new assignment(problemStatement, maxMarks));
-    }
+
     public void addLectureMaterial(LectureMaterial lectureMaterial, ArrayList<LectureMaterial> lectureMaterialTracker){
         lectureMaterialTracker.add(lectureMaterial);
     }
+    public void addAssessments(assessments assessment, ArrayList<assessments> assessmentTracker){
+        assessmentTracker.add(assessment);
+    }
+
     public void gradeAssessments(submissionContainer submission, int marksEarned){
         submission.setMarksEarned(marksEarned);
         submission.setGradingInstructor(this);
@@ -588,20 +615,32 @@ class student implements user{
     public void viewLectureMaterials(ArrayList<LectureMaterial> lectureMaterials) {
         for (LectureMaterial material: lectureMaterials){
             material.view();
+            System.out.println();
         }
     }
     @Override
-    public void viewAssessments(ArrayList<assessments> assessmentTracker) {
+    public boolean viewAssessments(ArrayList<assessments> assessmentTracker) {
+        boolean anyOpen = false;
         for (int i = 0; i < assessmentTracker.size(); i++){
-            assessmentTracker.get(i).view(i);
+            if (!assessmentTracker.get(i).isClose()){
+                assessmentTracker.get(i).view(i);
+                anyOpen = true;
+            }
         }
+        return anyOpen;
     }
     public void submitAssessments(assessments assessment, submissionContainer submission){
         this.studentSubmission.put(assessment, submission);
     }
-    public void viewGrades(){
-
+    public void viewGrades(ArrayList<assessments> assessmentTracker){
+        System.out.println("Graded submissions");
+        viewGradedAssessments(assessmentTracker);
+        System.out.println();
+        System.out.println("Ungraded submissions");
+        viewUngradedAssessments(assessmentTracker);
+        System.out.println("-----------------");
     }
+
     public String getName() {
         return name;
     }
@@ -613,7 +652,7 @@ class student implements user{
         return studentSubmission.get(assessment);
     }
 
-    public void viewPendingAssessments(ArrayList<assessments> assessmentTracker) {
+    public boolean viewPendingAssessments(ArrayList<assessments> assessmentTracker) {
         boolean isPending = false;
         for (int i = 0; i < assessmentTracker.size(); i++){
             if (!studentSubmission.containsKey(assessmentTracker.get(i)) && !assessmentTracker.get(i).isClose()){
@@ -623,21 +662,39 @@ class student implements user{
         }
         if (!isPending){
             System.out.println("No pending assignments");
+            return false;
+        }
+        else {
+            return true;
         }
     }
 
     public void viewGradedAssessments(ArrayList<assessments> assessmentTracker) {
-        for (int i = 0; i < assessmentTracker.size(); i++){
-            if (studentSubmission.containsKey(assessmentTracker.get(i)) && studentSubmission.get(assessmentTracker.get(i)).isGraded()){
-                assessmentTracker.get(i).view(i);
+        for (assessments assessments : assessmentTracker) {
+            if (studentSubmission.containsKey(assessments) && studentSubmission.get(assessments).isGraded()) {
+                if (assessments instanceof assignment) {
+                    System.out.println("Submission: " + studentSubmission.get(assessments).getSubmissionName());
+                    System.out.println("Marks scored: " + studentSubmission.get(assessments).getMarksEarned());
+                    System.out.println("Graded by: " + studentSubmission.get(assessments).getGradingInstructor().getName());
+                } else {
+                    System.out.println("Question: " + assessments.getQuestion());
+                    System.out.println("Ans Given: " + studentSubmission.get(assessments).getAnsGiven());
+                    System.out.println("Marks scored: " + studentSubmission.get(assessments).getMarksEarned());
+                    System.out.println("Graded by: " + studentSubmission.get(assessments).getGradingInstructor().getName());
+                }
             }
         }
     }
 
     public void viewUngradedAssessments(ArrayList<assessments> assessmentTracker) {
-        for (int i = 0; i < assessmentTracker.size(); i++){
-            if (studentSubmission.containsKey(assessmentTracker.get(i)) && !studentSubmission.get(assessmentTracker.get(i)).isGraded()){
-                assessmentTracker.get(i).view(i);
+        for (assessments assessments : assessmentTracker) {
+            if (studentSubmission.containsKey(assessments) && !studentSubmission.get(assessments).isGraded()) {
+                if (assessments instanceof assignment) {
+                    System.out.println("Submission: " + studentSubmission.get(assessments).getSubmissionName());
+                } else {
+                    System.out.println("Question: " + assessments.getQuestion());
+                    System.out.println("Ans Given: " + studentSubmission.get(assessments).getAnsGiven());
+                }
             }
         }
     }
@@ -667,7 +724,7 @@ class commentContainer {
 }
 
 class submissionContainer{
-    private assessments assessment;
+    private final assessments assessment;
     private instructor gradingInstructor;
     private String ansGiven;
     private String submissionName;
