@@ -6,8 +6,8 @@ public class backpack {
     private final ArrayList<assessments> assessmentTracker;
     private final ArrayList<LectureMaterial> lectureMaterialTracker;
     private final ArrayList<commentContainer> commentTracker;
-    Scanner sc;
-    Scanner sc2;
+    private final Scanner sc;
+    private final Scanner sc2;
     backpack(){
         this.commentTracker = new ArrayList<>();
         this.instructorTracker = new ArrayList<>();
@@ -56,7 +56,7 @@ public class backpack {
                                 System.out.print(backpack.assessmentTracker.get(assessmentID).getQuestion());
                                 String ans = backpack.sc2.nextLine();
                                 submissionContainer toSubmit = new submissionContainer(assessment);
-                                toSubmit.setAnsGiven(std, ans);
+                                toSubmit.setAnsGiven(ans);
                                 backpack.submitAssessment(std, assessment, toSubmit);
                             }
                             else{
@@ -308,8 +308,7 @@ public class backpack {
                 6. Close assessment
                 7. View comments
                 8. Add comments
-                9. Logout
-                """);
+                9. Logout""");
     }
     private void printStudentMenu(student std){
         System.out.println("Welcome " + std.getName());
@@ -355,7 +354,7 @@ class quiz implements assessments{
 
     @Override
     public void view(int index) {
-        System.out.println("ID: " + index + " Assignment: " + this.getQuestion());
+        System.out.println("ID: " + index + " Question: " + this.getQuestion());
     }
 
     @Override
@@ -635,7 +634,7 @@ class student implements user{
     public void viewGrades(ArrayList<assessments> assessmentTracker){
         System.out.println("Graded submissions");
         viewGradedAssessments(assessmentTracker);
-        System.out.println();
+        System.out.println("-----------------");
         System.out.println("Ungraded submissions");
         viewUngradedAssessments(assessmentTracker);
         System.out.println("-----------------");
@@ -774,7 +773,7 @@ class submissionContainer{
         this.submissionName = submissionName;
     }
 
-    public void setAnsGiven(student std, String ansGiven) {
+    public void setAnsGiven(String ansGiven) {
         this.ansGiven = ansGiven;
     }
 }
