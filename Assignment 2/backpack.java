@@ -53,7 +53,7 @@ public class backpack {
                             int assessmentID = backpack.sc.nextInt();
                             assessments assessment = backpack.assessmentTracker.get(assessmentID);
                             if (assessment instanceof quiz){
-                                System.out.print(backpack.assessmentTracker.get(assessmentID).getQuestion());
+                                System.out.print(backpack.assessmentTracker.get(assessmentID).getQuestion() + " ");
                                 String ans = backpack.sc2.nextLine();
                                 submissionContainer toSubmit = new submissionContainer(assessment);
                                 toSubmit.setAnsGiven(ans);
