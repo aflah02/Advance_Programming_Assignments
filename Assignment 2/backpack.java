@@ -187,6 +187,8 @@ public class backpack {
                                 }
                             }
                             if (!anyValid){
+                                backpack.printStartMenu();
+                                option = backpack.sc.nextInt();
                                 continue;
                             }
                             int student_no = backpack.sc.nextInt();
@@ -560,8 +562,8 @@ class instructor implements user{
     public boolean viewAssessments(ArrayList<assessments> assessmentTracker) {
         boolean anyOpen = false;
         for (int i = 0; i < assessmentTracker.size(); i++){
+            assessmentTracker.get(i).view(i);
             if (!assessmentTracker.get(i).isClose()){
-                assessmentTracker.get(i).view(i);
                 anyOpen = true;
             }
         }
@@ -621,8 +623,8 @@ class student implements user{
     public boolean viewAssessments(ArrayList<assessments> assessmentTracker) {
         boolean anyOpen = false;
         for (int i = 0; i < assessmentTracker.size(); i++){
+            assessmentTracker.get(i).view(i);
             if (!assessmentTracker.get(i).isClose()){
-                assessmentTracker.get(i).view(i);
                 anyOpen = true;
             }
         }
