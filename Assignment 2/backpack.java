@@ -115,7 +115,7 @@ public class backpack {
                             System.out.println("Enter content of slides");
                             ArrayList<String> slideContent = new ArrayList<>();
                             for (int i = 0; i < slideCount; i++) {
-                                System.out.print("Content of slide " + (i + 1) + ":");
+                                System.out.print("Content of slide " + (i + 1) + ": ");
                                 slideContent.add(backpack.sc2.nextLine());
                             }
                             Date currentTime = new java.util.Date(System.currentTimeMillis());
@@ -187,23 +187,23 @@ public class backpack {
                                 }
                             }
                             if (!anyValid){
-                                backpack.printStartMenu();
-                                option = backpack.sc.nextInt();
-                                continue;
-                            }
-                            int student_no = backpack.sc.nextInt();
-                            submissionContainer submission = backpack.studentTracker.get(student_no).getChosenStudentSubmission(assessment);
-                            if (assessment instanceof assignment){
-                                System.out.println("Submission: " + submission.getSubmissionName());
+
                             }
                             else{
-                                System.out.println("Submission: " + submission.getAssessment().getQuestion() + " , Answer Given: " + submission.getAnsGiven());
+                                int student_no = backpack.sc.nextInt();
+                                submissionContainer submission = backpack.studentTracker.get(student_no).getChosenStudentSubmission(assessment);
+                                if (assessment instanceof assignment){
+                                    System.out.println("Submission: " + submission.getSubmissionName());
+                                }
+                                else{
+                                    System.out.println("Submission: " + submission.getAssessment().getQuestion() + " , Answer Given: " + submission.getAnsGiven());
+                                }
+                                System.out.println("-------------------------------");
+                                System.out.println("Max Marks: " + submission.getAssessment().getMaxMarks());
+                                System.out.print("Marks scored: ");
+                                int marksScored = backpack.sc.nextInt();
+                                backpack.gradeSubmission(inst, submission, marksScored);
                             }
-                            System.out.println("-------------------------------");
-                            System.out.println("Max Marks: " + submission.getAssessment().getMaxMarks());
-                            System.out.print("Marks scored: ");
-                            int marksScored = backpack.sc.nextInt();
-                            backpack.gradeSubmission(inst, submission, marksScored);
                         }
                     }
                     else if (menu_option == 6){
@@ -356,7 +356,7 @@ class quiz implements assessments{
 
     @Override
     public void view(int index) {
-        System.out.println("ID: " + index + " Question: " + this.getQuestion());
+        System.out.println("ID: " + index + " Question: " + this.getQuestion() + " Close Status: " + this.isClose());
     }
 
     @Override
@@ -400,7 +400,7 @@ class assignment implements assessments{
 
     @Override
     public void view(int index) {
-        System.out.println("ID: " + index + " Assignment: " + this.getQuestion() + " Max Marks: " + this.getMaxMarks());
+        System.out.println("ID: " + index + " Assignment: " + this.getQuestion() + " Max Marks: " + this.getMaxMarks() + " Close Status: " + this.isClose());
     }
 
     @Override
@@ -548,6 +548,7 @@ class instructor implements user{
     public void viewComments(ArrayList<commentContainer> commentTracker) {
         for (commentContainer comment: commentTracker){
             System.out.println(comment.getComment() + " - " + comment.getUser().getName());
+            System.out.println(comment.getUploadDate());
             System.out.println();
         }
     }
@@ -606,6 +607,7 @@ class student implements user{
         for (commentContainer comment: commentTracker){
             System.out.println(comment.getComment() + " - " + comment.getUser().getName());
             System.out.println(comment.getUploadDate());
+            System.out.println();
         }
     }
     @Override
