@@ -326,8 +326,6 @@ public class backpack {
     }
 }
 interface assessments{
-    public void addQuestion(String s);
-    public void setMaxMarks(int maxMarks);
     public void view(int index);
     public void close();
     public boolean isClose();
@@ -336,22 +334,13 @@ interface assessments{
 }
 
 class quiz implements assessments{
-    private String quizQuestion;
-    private int maxMarks;
+    private final String quizQuestion;
+    private final int maxMarks;
     private boolean close;
     quiz(String quizQuestion){
-        addQuestion(quizQuestion);
-        setMaxMarks(1);
-        close = false;
-    }
-    @Override
-    public void addQuestion(String quizQuestion) {
         this.quizQuestion = quizQuestion;
-    }
-
-    @Override
-    public void setMaxMarks(int maxMarks) {
-        this.maxMarks = maxMarks;
+        this.maxMarks = 1;
+        close = false;
     }
 
     @Override
@@ -380,22 +369,13 @@ class quiz implements assessments{
 }
 
 class assignment implements assessments{
-    private String problemStatement;
-    private int maxMarks;
+    private final String problemStatement;
+    private final int maxMarks;
     private boolean close;
     assignment(String problemStatement, int maxMarks){
-        addQuestion(problemStatement);
-        setMaxMarks(maxMarks);
-        close = false;
-    }
-    @Override
-    public void addQuestion(String problemStatement) {
         this.problemStatement = problemStatement;
-    }
-
-    @Override
-    public void setMaxMarks(int maxMarks) {
         this.maxMarks = maxMarks;
+        close = false;
     }
 
     @Override
@@ -424,9 +404,6 @@ class assignment implements assessments{
 }
 
 interface LectureMaterial{
-    public void setTitle(String title);
-    public void setTime(Date currentTime);
-    public void setInstructor(instructor uploader);
     public void view();
     public String getTitle();
     public Date getUploadDate();
@@ -434,28 +411,17 @@ interface LectureMaterial{
 }
 
 class LectureSlides implements LectureMaterial{
-    private String title;
-    private ArrayList<String> slideContent;
-    private Date uploadDate;
-    private instructor uploader;
+    private final String title;
+    private final ArrayList<String> slideContent;
+    private final Date uploadDate;
+    private final instructor uploader;
 
     LectureSlides(String title, ArrayList<String> slideContent, Date uploadDate, instructor uploader){
-        setTitle(title);
-        setContents(slideContent);
-        setTime(uploadDate);
-        setInstructor(uploader);
+        this.title = title;
+        this.slideContent = slideContent;
+        this.uploadDate = uploadDate;
+        this.uploader = uploader;
     }
-
-    @Override
-    public void setTitle(String title) { this.title = title; }
-
-    public void setContents(ArrayList<String> content) { this.slideContent = content; }
-
-    @Override
-    public void setTime(Date currentTime) { this.uploadDate = currentTime; }
-
-    @Override
-    public void setInstructor(instructor uploader) { this.uploader = uploader; }
 
     @Override
     public void view() {
@@ -481,28 +447,17 @@ class LectureSlides implements LectureMaterial{
 
 class LectureRecordings implements LectureMaterial{
 
-    private String title;
-    private String fileName;
-    private Date uploadDate;
-    private instructor uploader;
+    private final String title;
+    private final String fileName;
+    private final Date uploadDate;
+    private final instructor uploader;
 
     public LectureRecordings(String videoTopic, String fileName, Date uploadDate, instructor uploader) {
-        setTitle(videoTopic);
-        setFileName(fileName);
-        setTime(uploadDate);
-        setInstructor(uploader);
+        this.title = videoTopic;
+        this.fileName = fileName;
+        this.uploadDate = uploadDate;
+        this.uploader = uploader;
     }
-
-    @Override
-    public void setTitle(String title) { this.title = title; }
-
-    public void setFileName(String fileName) { this.fileName = fileName; }
-
-    @Override
-    public void setTime(Date currentTime) { this.uploadDate = currentTime; }
-
-    @Override
-    public void setInstructor(instructor uploader) { this.uploader = uploader; }
 
     @Override
     public void view() {
