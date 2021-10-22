@@ -1,15 +1,9 @@
-# BackPack
+## 2 Snakes (So Abstract Snake and inherit)
 
-- OOPS + Interface + Polymorphism
+## 3 Floors (So Abstract floor and inherit)
 
-# Users
+## Class Player
 
-- Instructors 
-- Students
+## Class Dice
 
-## More than 1 instructor or student possible per course
-
-## Single Course Page with 2 types of Users
-
-So I'm thinking User Interface which is extended by Prof and Student
-
+## Class Ladder
