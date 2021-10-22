@@ -1,9 +1,10 @@
 import java.util.*;
 
 public class SnakesandLadders {
-    final floor[] floorTracker;
-    final player player;
-    final Dice dice;
+    final private floor[] floorTracker;
+    final private player player;
+    final private Dice dice;
+    private int points;
     SnakesandLadders(String name){
         floorTracker = new floor[14];
         floorTracker[0] = new normalFloor(0);
@@ -22,6 +23,7 @@ public class SnakesandLadders {
         floorTracker[13] = new normalFloor(13);
         player = new player(name);
         dice = new Dice(2);
+        points = 0;
     }
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -29,17 +31,76 @@ public class SnakesandLadders {
         String name = sc.nextLine();
         SnakesandLadders snakesandLadders = new SnakesandLadders(name);
         snakesandLadders.gameReady();
-        snakesandLadders.newTurn(sc, snakesandLadders.dice);
+        while (snakesandLadders.player.getPosition() != 13){
+            snakesandLadders.newTurn(sc, snakesandLadders.player, snakesandLadders.dice);
+        }
+        System.out.println("Game over");
+        System.out.println(snakesandLadders.player.getName() + " accumulated " + snakesandLadders.points + " points");
+    }
+
+    private void newTurn(Scanner sc, player player, Dice dice) {
+        if (player.getPosition() == -1){
+            while (player.getPosition() == -1){
+                System.out.print("Hit enter to roll the dice");
+                String enter = sc.nextLine();
+                dice.roll();
+                int value = dice.getFaceValue();
+                System.out.println("Dice gave " + value);
+                if (value == 1){
+                    player.startGame();
+                    setPoints(1);
+                }
+                else{
+                    System.out.println("Game cannot start until you get 1");
+                }
+            }
+            printInfo();
+        }
+        else{
+            System.out.print("Hit enter to roll the dice");
+            String enter = sc.nextLine();
+            dice.roll();
+            int value = dice.getFaceValue();
+            if (player.getPosition() + value <= 13){
+                System.out.println("Dice gave " + value);
+            }
+            if (player.getPosition() + value > 13){
+                System.out.println("Dice gave 2\n" +
+                        "Player cannot move");
+            }
+            else{
+                player.move(value);
+                points = floorTracker[player.getPosition()].changePoints(points);
+                printInfo();
+                if (!floorTracker[player.getPosition()].floorType().equals("Empty")){
+                    if (player.getPosition() + floorTracker[player.getPosition()].jumpBy() > 13){
+                        System.out.println("Dice gave 2\n" +
+                                "Player cannot move");
+                    }
+                    else{
+                        floorTracker[player.getPosition()].move(player);
+                        points = floorTracker[player.getPosition()].changePoints(points);
+                        printInfo();
+                    }
+                }
+            }
+        }
+    }
+    private int getPoints() {
+        return points;
+    }
+    private void setPoints(int points){
+        this.points = points;
     }
     private void gameReady(){
         System.out.println("The game setup is ready");
     }
-    private void newTurn(Scanner sc, Dice dice){
-        System.out.println("Hit enter to roll the dice");
-        String enter = sc.nextLine();
-        dice.roll();
-        int value = dice.getFaceValue();
-
+    private void printInfo(){
+        System.out.println("Player position Floor-" + player.getPosition());
+        System.out.println(player.getName() + " has reached an " +
+                floorTracker[player.getPosition()].floorType() + " Floor");
+        System.out.println("Total points " + getPoints());
+        System.out.println();
     }
 }
 abstract class floor{
@@ -48,14 +109,15 @@ abstract class floor{
         this.location = location;
     }
     public abstract void move(player P);
+    public abstract String floorType();
+    public abstract int changePoints(int currPoints);
+    public abstract int jumpBy();
 }
 
 abstract class snakeFloor extends floor{
     snakeFloor(int location) {
         super(location);
     }
-
-    public abstract void decreasePoints(player p);
 }
 
 class cobraFloor extends snakeFloor{
@@ -70,8 +132,18 @@ class cobraFloor extends snakeFloor{
     }
 
     @Override
-    public void decreasePoints(player P) {
-        P.setPoints(P.getPoints()-4);
+    public String floorType() {
+        return "King Cobra";
+    }
+
+    @Override
+    public int changePoints(int currPoints) {
+        return currPoints-4;
+    }
+
+    @Override
+    public int jumpBy() {
+        return -4;
     }
 }
 
@@ -87,8 +159,18 @@ class normalSnakeFloor extends snakeFloor{
     }
 
     @Override
-    public void decreasePoints(player P) {
-        P.setPoints(P.getPoints()-2);
+    public String floorType() {
+        return "Normal Snake";
+    }
+
+    @Override
+    public int changePoints(int currPoints) {
+        return currPoints - 2;
+    }
+
+    @Override
+    public int jumpBy() {
+        return -2;
     }
 }
 
@@ -103,8 +185,18 @@ class normalFloor extends floor{
         P.setPosition(P.getPosition()+1);
     }
 
-    public void increasePoints(player P) {
-        P.setPoints(P.getPoints()+1);
+    @Override
+    public String floorType() {
+        return "Empty";
+    }
+
+    public int changePoints(int currPoints) {
+        return currPoints + 1;
+    }
+
+    @Override
+    public int jumpBy() {
+        return 1;
     }
 
 }
@@ -113,8 +205,6 @@ abstract class ladderFloor extends floor{
     ladderFloor(int location) {
         super(location);
     }
-
-    public abstract void increasePoints(player p);
 }
 
 class elevatorFloor extends ladderFloor{
@@ -129,8 +219,18 @@ class elevatorFloor extends ladderFloor{
     }
 
     @Override
-    public void increasePoints(player P) {
-        P.setPoints(P.getPoints()+4);
+    public String floorType() {
+        return "Elevator";
+    }
+
+    @Override
+    public int changePoints(int currPoints) {
+        return currPoints + 4;
+    }
+
+    @Override
+    public int jumpBy() {
+        return 4;
     }
 }
 
@@ -146,8 +246,18 @@ class normalLadderFloor extends ladderFloor{
     }
 
     @Override
-    public void increasePoints(player P) {
-        P.setPoints(P.getPoints()+2);
+    public String floorType() {
+        return "Ladder";
+    }
+
+    @Override
+    public int changePoints(int currPoints) {
+        return currPoints + 2;
+    }
+
+    @Override
+    public int jumpBy() {
+        return 2;
     }
 }
 
@@ -163,8 +273,8 @@ class Dice {
 
     // Rolls the dice
     public void roll() {
-        Random rand = null;
-        int curr_faceValue = 1 + rand.nextInt(numFaces);
+        Random r = new Random();
+        int curr_faceValue = 1 + r.nextInt(numFaces);
         setFaceValue(curr_faceValue);
     }
 
@@ -182,29 +292,24 @@ class Dice {
 class player{
     private final String name;
     private int position;
-    private int points;
     player(String name) {
         this.name = name;
-        this.position = 0;
-        this.points = 1;
+        this.position = -1;
     }
     public void setPosition(int pos){
         this.position = pos;
     }
-
+    public void move(int by){
+        this.position += by;
+    }
+    public void startGame(){
+        position = 0;
+    }
     public String getName() {
         return name;
     }
 
     public int getPosition() {
         return position;
-    }
-
-    public int getPoints() {
-        return points;
-    }
-
-    public void setPoints(int points) {
-        this.points = points;
     }
 }
