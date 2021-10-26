@@ -68,6 +68,7 @@ final public class SnakesandLadders {
         }
         else{
             System.out.println("Thanks for Playing");
+            System.out.println();
         }
         System.out.println(snakesandLadders.player.getName() + " accumulated " + snakesandLadders.points + " points");
     }
@@ -217,8 +218,8 @@ abstract class floor{
 }
 
 abstract class snakeFloor extends floor{
-    private final int decreasePointsBy;
-    private final int decreaseLocationBy;
+    protected int decreasePointsBy;
+    protected int decreaseLocationBy;
     snakeFloor(int location, int decreasePointsBy, int decreaseLocationBy) {
         super(location);
         this.decreasePointsBy = decreasePointsBy;
@@ -327,8 +328,8 @@ final class normalFloor extends floor{
 }
 
 abstract class ladderFloor extends floor{
-    private final int increasePointsBy;
-    private final int increaseLocationBy;
+    protected int increasePointsBy;
+    protected int increaseLocationBy;
     ladderFloor(int location, int increasePointsBy, int increaseLocationBy) {
         super(location);
         this.increasePointsBy = increasePointsBy;
