@@ -227,13 +227,7 @@ abstract class snakeFloor extends floor{
     }
     public abstract int reducePoints(int currPoints, int reduceBy);
 
-    public int getDecreasePointsBy() {
-        return decreasePointsBy;
-    }
 
-    public int getDecreaseLocationBy() {
-        return decreaseLocationBy;
-    }
 }
 
 final class cobraFloor extends snakeFloor{
@@ -266,6 +260,14 @@ final class cobraFloor extends snakeFloor{
     public int jumpBy() {
         return this.getDecreaseLocationBy();
     }
+
+    public int getDecreasePointsBy() {
+        return decreasePointsBy;
+    }
+
+    public int getDecreaseLocationBy() {
+        return decreaseLocationBy;
+    }
 }
 
 final class normalSnakeFloor extends snakeFloor{
@@ -297,6 +299,14 @@ final class normalSnakeFloor extends snakeFloor{
     @Override
     public int jumpBy() {
         return this.getDecreaseLocationBy();
+    }
+
+    public int getDecreasePointsBy() {
+        return decreasePointsBy;
+    }
+
+    public int getDecreaseLocationBy() {
+        return decreaseLocationBy;
     }
 }
 
@@ -336,14 +346,6 @@ abstract class ladderFloor extends floor{
         this.increaseLocationBy = increaseLocationBy;
     }
     public abstract int increaseBy(int currPoints, int reduceBy);
-
-    public int getIncreasePointsBy() {
-        return increasePointsBy;
-    }
-
-    public int getIncreaseLocationBy() {
-        return increaseLocationBy;
-    }
 }
 
 final class elevatorFloor extends ladderFloor{
@@ -376,6 +378,14 @@ final class elevatorFloor extends ladderFloor{
     public int jumpBy() {
         return 4;
     }
+
+    public int getIncreasePointsBy() {
+        return increasePointsBy;
+    }
+
+    public int getIncreaseLocationBy() {
+        return increaseLocationBy;
+    }
 }
 
 final class normalLadderFloor extends ladderFloor{
@@ -407,6 +417,14 @@ final class normalLadderFloor extends ladderFloor{
     @Override
     public int increaseBy(int currPoints, int increasePointsBy) {
         return currPoints + increasePointsBy;
+    }
+
+    public int getIncreasePointsBy() {
+        return increasePointsBy;
+    }
+
+    public int getIncreaseLocationBy() {
+        return increaseLocationBy;
     }
 }
 
