@@ -34,7 +34,7 @@ public class HopnWin {
             int jumpedTo = hopnWin.getRandomHop();
             System.out.println("You landed on tile " + jumpedTo);
             try{
-                if ((jumpedTo-1)%2==0){
+                if ((jumpedTo)%2==0){
                     SoftToy won = hopnWin.tileCarpet.getTileSoftToyName(jumpedTo-1);
                     hopnWin.bucket.addSoftToy(won);
                     System.out.println("You won a " + won.getName());
