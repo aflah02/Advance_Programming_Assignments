@@ -1,4 +1,3 @@
-import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -7,6 +6,8 @@ public class HopnWin {
     private final TileCarpet tileCarpet;
     private final Scanner sc1;
     private final Scanner sc2;
+    private final GenericCalculator<String> stringGenericCalculator;
+    private final GenericCalculator<Integer> integerGenericCalculator;
     HopnWin(){
         sc1 = new Scanner(System.in);
         sc2 = new Scanner(System.in);
@@ -21,6 +22,19 @@ public class HopnWin {
             arr.remove(name);
             tileCarpet.addTile(new Tile(i,new SoftToy(name + " soft toy")));
         }
+        this.stringGenericCalculator = new GenericCalculator<String>() {
+            @Override
+            public String solve(String itemOne, String itemTwo) {
+                return itemOne+itemTwo;
+            }
+        };
+        this.integerGenericCalculator = new GenericCalculator<Integer>() {
+            @Override
+            public Integer solve(Integer itemOne, Integer itemTwo) throws divisionByZero{
+                return itemOne/itemTwo;
+            }
+        };
+
     }
     public static void main(String[] args) throws Exception {
         HopnWin hopnWin = new HopnWin();
@@ -55,20 +69,38 @@ public class HopnWin {
                             System.out.println(ex.getMessage());
                         }
                     }
-                    if (choice.equals("integer")){
-                        int num1 = hopnWin.getRandomNumber();
-                        int num2 = hopnWin.getRandomNumber();
-                        System.out.println("Calculate the result of " + num1 + " divided by " + num2);
-                        int ans = hopnWin.sc1.nextInt();
-                        GenericCalculator<Integer> calculator = new GenericCalculator<Integer>() {
-                            @Override
-                            public Integer solve(Integer itemOne, Integer itemTwo) throws divisionByZero{
-                                return itemOne/itemTwo;
+                    boolean isDone = false;
+                    while (!isDone){
+                        if (choice.equals("integer")){
+                            try{
+                                int num1 = hopnWin.getRandomNumber();
+                                int num2 = hopnWin.getRandomNumber();
+                                isValid(num1, num2);
+                                isDone = true;
+                                System.out.println("Calculate the result of " + num1 + " divided by " + num2);
+                                int ans = hopnWin.sc1.nextInt();
+                                int calculatorAns = hopnWin.integerGenericCalculator.solve(num1,num2);
+                                if (ans==calculatorAns){
+                                    SoftToy won = hopnWin.tileCarpet.getTileSoftToyName(jumpedTo-1);
+                                    hopnWin.bucket.addSoftToy(won);
+                                    System.out.println("You won a " + won.getName());
+                                }
+                                else{
+                                    System.out.println("Incorrect answer\n" +
+                                            "You did not win any soft toy");
+                                }
                             }
-                        };
-                        try{
-                            int calculatorAns = calculator.solve(num1,num2);
-                            if (ans==calculatorAns){
+                            catch (divisionByZero ignored){
+                            }
+                    }
+                        else if (choice.equals("string")){
+                            String s1 = hopnWin.genRandomString();
+                            String s2 = hopnWin.genRandomString();
+                            isDone = true;
+                            System.out.println("Calculate the concatenation of strings " + s1 + " and " + s2);
+                            String ans = hopnWin.sc2.nextLine();
+                            String calculatorAns = hopnWin.stringGenericCalculator.solve(s1,s2);
+                            if (ans.equals(calculatorAns)){
                                 SoftToy won = hopnWin.tileCarpet.getTileSoftToyName(jumpedTo-1);
                                 hopnWin.bucket.addSoftToy(won);
                                 System.out.println("You won a " + won.getName());
@@ -78,32 +110,8 @@ public class HopnWin {
                                         "You did not win any soft toy");
                             }
                         }
-                        catch (divisionByZero e){
-                            System.out.println(e.getMessage());
-                        }
                     }
-                    else if (choice.equals("string")){
-                        String s1 = hopnWin.genRandomString();
-                        String s2 = hopnWin.genRandomString();
-                        System.out.println("Calculate the concatenation of strings " + s1 + " and " + s2);
-                        String ans = hopnWin.sc2.nextLine();
-                        GenericCalculator<String> calculator = new GenericCalculator<String>() {
-                            @Override
-                            public String solve(String itemOne, String itemTwo) {
-                                return itemOne+itemTwo;
-                            }
-                        };
-                        String calculatorAns = calculator.solve(s1,s2);
-                        if (ans.equals(calculatorAns)){
-                            SoftToy won = hopnWin.tileCarpet.getTileSoftToyName(jumpedTo-1);
-                            hopnWin.bucket.addSoftToy(won);
-                            System.out.println("You won a " + won.getName());
-                        }
-                        else{
-                            System.out.println("Incorrect answer\n" +
-                                    "You did not win any soft toy");
-                        }
-                    }
+
                 }
             } catch (jumpedToMuddyPool jumpedToMuddyPool) {
                 System.out.println(jumpedToMuddyPool.getMessage());
@@ -134,6 +142,13 @@ public class HopnWin {
         }
 
     }
+
+    private static void isValid(int num1, int num2) throws divisionByZero{
+        if (num2 == 0){
+            throw new divisionByZero();
+        }
+    }
+
     public static <T> T getRandomElement(ArrayList<T> arr){
         return arr.get(ThreadLocalRandom.current().nextInt(arr.size()));
     }
@@ -154,9 +169,9 @@ public class HopnWin {
         }
         return toReturn.toString();
     }
-    public boolean isChoiceValid(String s) throws Exception{
+    public void isChoiceValid(String s) throws Exception{
         if (s.equals("integer")||s.equals("string")){
-            return true;
+            return;
         }
         throw new choiceNotValid("Please enter a valid choice, the options are string or integer");
     }
@@ -170,9 +185,8 @@ final class Tile{
         Pos = pos;
         this.softToy = softToy;
     }
-
-    public SoftToy getSoftToy() {
-        return softToy;
+    public SoftToy getSoftToyClone() {
+        return softToy.clone();
     }
 }
 
@@ -205,7 +219,7 @@ final class TileCarpet{
         if (pos >= Tiles.size()){
             throw new jumpedToMuddyPool("You are too energetic and zoomed past all the tiles. Muddy Puddle Splash!");
         }
-        return Tiles.get(pos).getSoftToy().clone();
+        return Tiles.get(pos).getSoftToyClone();
     }
 }
 
@@ -240,27 +254,10 @@ class choiceNotValid extends Exception{
     }
 }
 class divisionByZero extends Exception{
-    public divisionByZero(String message){
-        super(message);
+    public divisionByZero(){
+        super();
     }
 }
 abstract class GenericCalculator<T>{
     public abstract T solve(T itemOne, T itemTwo) throws Exception;
 }
-//class IntegerCalculator implements GenericCalculator<Integer>{
-//    @Override
-//    public Integer solve(Integer itemOne, Integer itemTwo) {
-//        return itemOne/itemTwo;
-//    }
-//}
-//class StringCalculator implements GenericCalculator<String>{
-//    @Override
-//    public String solve(String itemOne, String itemTwo) {
-//        return itemOne+itemTwo;
-//    }
-//}
-//class GenericACalculator<T>{
-//    public T solve(T itemOne, T itemTwo){
-//
-//    }
-//}
