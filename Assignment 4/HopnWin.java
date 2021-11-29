@@ -17,7 +17,7 @@ public class HopnWin {
         ArrayList<String> arr = new ArrayList<String>(Arrays.asList(names));
         bucket = new Bucket();
         tileCarpet = new TileCarpet();
-        for (int i = 0; i < 21; i++){
+        for (int i = 0; i < 20; i++){
             String name = getRandomElement(arr);
             arr.remove(name);
             tileCarpet.addTile(new Tile(i,new SoftToy(name + " soft toy")));
@@ -92,29 +92,40 @@ public class HopnWin {
                             }
                             catch (divisionByZero ignored){
                             }
+                            catch (CloneNotSupportedException cloneNotSupportedException){
+                                cloneNotSupportedException.printStackTrace();
+                            }
                     }
                         else if (choice.equals("string")){
-                            String s1 = hopnWin.genRandomString();
-                            String s2 = hopnWin.genRandomString();
-                            isDone = true;
-                            System.out.println("Calculate the concatenation of strings " + s1 + " and " + s2);
-                            String ans = hopnWin.sc2.nextLine();
-                            String calculatorAns = hopnWin.stringGenericCalculator.solve(s1,s2);
-                            if (ans.equals(calculatorAns)){
-                                SoftToy won = hopnWin.tileCarpet.getTileSoftToyName(jumpedTo-1);
-                                hopnWin.bucket.addSoftToy(won);
-                                System.out.println("You won a " + won.getName());
+                            try{
+                                String s1 = hopnWin.genRandomString();
+                                String s2 = hopnWin.genRandomString();
+                                isDone = true;
+                                System.out.println("Calculate the concatenation of strings " + s1 + " and " + s2);
+                                String ans = hopnWin.sc2.nextLine();
+                                String calculatorAns = hopnWin.stringGenericCalculator.solve(s1,s2);
+                                if (ans.equals(calculatorAns)){
+                                    SoftToy won = hopnWin.tileCarpet.getTileSoftToyName(jumpedTo-1);
+                                    hopnWin.bucket.addSoftToy(won);
+                                    System.out.println("You won a " + won.getName());
+                                }
+                                else{
+                                    System.out.println("Incorrect answer\n" +
+                                            "You did not win any soft toy");
+                                }
+                            } catch (CloneNotSupportedException e) {
+                                e.printStackTrace();
                             }
-                            else{
-                                System.out.println("Incorrect answer\n" +
-                                        "You did not win any soft toy");
-                            }
+
                         }
                     }
 
                 }
             } catch (jumpedToMuddyPool jumpedToMuddyPool) {
                 System.out.println(jumpedToMuddyPool.getMessage());
+            }
+            catch(CloneNotSupportedException cloneNotSupportedException){
+                cloneNotSupportedException.printStackTrace();
             }
             hop++;
             if (hop == 2){
@@ -185,7 +196,7 @@ final class Tile{
         Pos = pos;
         this.softToy = softToy;
     }
-    public SoftToy getSoftToyClone() {
+    public SoftToy getSoftToyClone() throws CloneNotSupportedException {
         return softToy.clone();
     }
 }
@@ -215,7 +226,7 @@ final class TileCarpet{
     public void addTile(Tile tile){
         Tiles.add(tile);
     }
-    public SoftToy getTileSoftToyName(int pos) throws jumpedToMuddyPool {
+    public SoftToy getTileSoftToyName(int pos) throws jumpedToMuddyPool, CloneNotSupportedException {
         if (pos >= Tiles.size()){
             throw new jumpedToMuddyPool("You are too energetic and zoomed past all the tiles. Muddy Puddle Splash!");
         }
